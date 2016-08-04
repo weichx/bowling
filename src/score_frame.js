@@ -13,7 +13,6 @@ class ScoreFrame {
     scoreRoll(pinCount) {
         this.totalRolls++;
         this.score += clamp(pinCount, 0, 10);
-
         if (this.frameResult === FrameResult.Pending) {
 
             if (this.score === 10 && this.totalRolls === 1) {
@@ -35,7 +34,8 @@ class ScoreFrame {
 
     get isRollingCompleted() {
         if(this.isLastFrame) {
-            return this.totalRolls === (this.isStrike || this.isSpare) ? 3 : 2;
+            var targetRolls = (this.isStrike || this.isSpare) ? 3 : 2;
+            return targetRolls === this.totalRolls;
         }
         else {
             return !this.isPending;

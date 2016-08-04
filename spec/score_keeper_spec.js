@@ -4,7 +4,8 @@ describe("ScoreKeeper", function() {
     var scoreKeeper = null;
 
     beforeEach(function() {
-        scoreKeeper = new ScoreKeeper(10);
+        scoreKeeper = new ScoreKeeper();
+        scoreKeeper.beginNewGame(10);
         scoreKeeper.beginNewFrame();
     });
 
@@ -123,4 +124,15 @@ describe("ScoreKeeper", function() {
 
     });
 
+    it("scores a perfect game", function() {
+        scoreKeeper = new ScoreKeeper();
+        scoreKeeper.beginNewGame(10);
+        for(var i = 0; i < 10; i++) {
+            scoreKeeper.beginNewFrame();
+            scoreKeeper.recordScore(10);
+        }
+        scoreKeeper.recordScore(10);
+        scoreKeeper.recordScore(10);
+        expect(scoreKeeper.totalScore).toBe(300);
+    })
 });

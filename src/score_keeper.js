@@ -1,14 +1,18 @@
 const ScoreFrame = require("./score_frame");
-const FrameResult = require("./e_frame_result");
 
 class ScoreKeeper {
 
-    constructor(totalFrames) {
+    constructor() {
         this.currentFrameIndex = -1;
-        this.frames = new Array(totalFrames);
+        this.frames = [];
         this.pendingList = [];
-        for (var i = 0; i < totalFrames; i++) {
-            this.frames[i] = new ScoreFrame(i === totalFrames - 1);
+    }
+
+    beginNewGame(frameCount) {
+        this.currentFrameIndex = -1;
+        this.frames = new Array(frameCount);
+        for (var i = 0; i < frameCount; i++) {
+            this.frames[i] = new ScoreFrame(i === frameCount - 1);
         }
     }
 
@@ -19,7 +23,6 @@ class ScoreKeeper {
 
     recordScore(pins) {
         for(var i = 0; i < this.pendingList.length; i++) {
-
             const pendingFrame = this.pendingList[i];
             pendingFrame.scoreRoll(pins);
 
