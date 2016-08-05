@@ -46,8 +46,7 @@ class TurnManager extends EventEmitter {
 
     endTurn() {
         this.emit(GameEvent.EndTurn, this.currentPlayer, this.currentFrameNumber);
-        this.currentPlayerIdx++;
-        this.currentPlayerIdx = this.currentPlayerIdx % this.players.length;
+        this.currentPlayerIdx = ++this.currentPlayerIdx % this.players.length;
         //when we wrap around to the first player again we know the frame is over.
         //if the frame isn't completed, start the next player's turn
         if (this.currentPlayerIdx === 0) {
