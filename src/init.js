@@ -9,15 +9,17 @@ const degToRad = require("./util").degToRad;
 const ResourceManager = require("./resource_manager");
 const Scene = require("./test_scene");
 
-
 ResourceManager.readyPromise.then(() => {
 
-    const sceneRoot = Scene.load();
-    const world = mat4.create();
+    const scene = Scene.load();
+    const sceneRoot = scene.root;
+    const scenePhysics = scene.physicsWorld;
+
+    const identityMatrix = mat4.create();
     const camera = new Camera();
     const gl = GLUtil.getGl();
-    camera.updatePerspectiveMatrix();
 
+    camera.updatePerspectiveMatrix();
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.2, 0.2, 0.2, 1.0);
@@ -25,6 +27,7 @@ ResourceManager.readyPromise.then(() => {
     (function tick(timestamp) {
         Time.update(timestamp);
         requestAnimationFrame(tick);
+        scenePhysics.step(1.0 / 60.0, Time.deltaTime, 3);
         sceneRoot.update();
         camera.update();
         render();
@@ -38,17 +41,11 @@ ResourceManager.readyPromise.then(() => {
 
         var inv = camera.getMatrix();
         mat4.invert(inv, inv);
-        sceneRoot.render(world, inv, camera.projectionMatrix);
-        //sorted by material
-        //foreach material group
-        //foreach rendered item
-        //material.setup();
-        //material.render();
-        //material.cleanup();
+        sceneRoot.render(identityMatrix, inv, camera.projectionMatrix);
     }
 
     const scratch = vec3.create();
-    window.cameraSpeed = 5;
+    window.cameraSpeed = 15;
     const canvas = GLUtil.getCanvas();
     document.addEventListener("keypress", keyFn);
     document.addEventListener("keydown", keyFn);
@@ -81,47 +78,7 @@ ResourceManager.readyPromise.then(() => {
         }
     }
 
-    // var mouseDown = false;
-    // var lastMouseX = null;
-    // var lastMouseY = null;
-    //
-    // var moonRotationMatrix = mat4.create();
-    // mat4.identity(moonRotationMatrix);
-    //
-    // document.addEventListener("mouseup", handleMouseUp);
-    // document.addEventListener("mousedown", handleMouseDown);
-    // document.addEventListener("mousemove", handleMouseMove);
-    //
-    // function handleMouseDown(event) {
-    //     mouseDown = true;
-    //     lastMouseX = event.clientX;
-    //     lastMouseY = event.clientY;
-    // }
-    //
-    // function handleMouseUp(event) {
-    //     mouseDown = false;
-    // }
-    //
-    // function handleMouseMove(event) {
-    //     if (!mouseDown) {
-    //         return;
-    //     }
-    //     var newX = event.clientX;
-    //     var newY = event.clientY;
-    //
-    //     var deltaX = newX - lastMouseX;
-    //     var deltaY = newY - lastMouseY;
-    //
-    //     var xQuat = quat.create();
-    //     var yQuat = quat.create();
-    //     var outQuat = quat.create();
-    //     quat.setAxisAngle(xQuat, [1, 0, 0], degToRad(deltaX / 10));
-    //     quat.setAxisAngle(yQuat, [0, 1, 0], degToRad(deltaY / 10));
-    //
-    //
-    //     lastMouseX = newX;
-    //     lastMouseY = newY;
-    // }
+
 
 
 });

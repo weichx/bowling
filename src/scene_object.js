@@ -1,6 +1,7 @@
 const vec3 = require("gl-matrix").vec3;
 const quat = require("gl-matrix").quat;
 const mat4 = require("gl-matrix").mat4;
+const mat3 = require("gl-matrix").mat3;
 const GLUtil = require("./gl_util");
 
 const forward = vec3.fromValues(0, 0, 1);
@@ -13,7 +14,7 @@ class SceneObject {
         this.setParent(parentNode);
         this.model = null;
         this.material = null;
-        this.collider = null;
+        this.rigidBody = null;
         this.components = [];
         this.children = [];
         this.position = vec3.create();
@@ -59,6 +60,10 @@ class SceneObject {
         mat4.multiply(world, world, parentWorld);
         mat4.multiply(mvMatrix, viewMatrix, world);
 
+        var normalMatrix = mat3.create();
+        mat3.normalFromMat4(normalMatrix, mvMatrix);
+        gl.uniformMatrix3fv(shaderPointers.uNormalMatrix, false, normalMatrix);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.glBuffer);
         gl.vertexAttribPointer(shaderPointers.aVertexPosition, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(shaderPointers.aVertexPosition);
@@ -80,14 +85,20 @@ class SceneObject {
     }
 
     update() {
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].update();
+        if(this.rigidBody && !this.rigidBody.test) {
+            var v = this.rigidBody.position;
+            var q = this.rigidBody.quaternion;
+            this.setPosition(v.x, v.y, v.z);
+            this.setRotation(q.x, q.y, q.z, q.w);
+        }
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].update();
         }
     }
 
     destroy() {
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].destroy();
+        for (var i = 0; i < this.children.length; i++) {
+            this.children[i].destroy();
         }
     }
 
@@ -95,8 +106,8 @@ class SceneObject {
         vec3.set(this.scale, x, y, z);
     }
 
-    setRotation(yaw, pitch, roll) {
-        throw Error("Not implemented");
+    setRotation(x, y, z, w) {
+        quat.set(this.rotation, x, y, z, w);
     }
 
     setPosition(x, y, z) {

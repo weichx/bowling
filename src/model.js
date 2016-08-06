@@ -7,6 +7,7 @@ class Model {
 
         const vertices = modelJSON.meshes[0].vertices;
         const indices = modelJSON.meshes[0].indices;
+        const normals = modelJSON.meshes[0].normals;
         const uvs = modelJSON.meshes[0].uvs;
 
         const gl = GLUtil.getGl();
@@ -14,12 +15,17 @@ class Model {
         this.vertexBuffer = new GLBuffer();
         this.indexBuffer = new GLBuffer();
         this.uvBuffer = new GLBuffer();
-        //this.normalBuffer = new GLBuffer();
+        this.normalBuffer = new GLBuffer();
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.glBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         this.vertexBuffer.itemSize = 3;
         this.vertexBuffer.numItems = vertices.length;
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+        this.normalBuffer.itemSize = 3;
+        this.normalBuffer.numItems = normals.length;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer.glBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);

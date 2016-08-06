@@ -1,0 +1,8 @@
+{
+  "textures": [
+    {
+      "id": "ball.tex",
+      "path": "./textures/bowling ball.png"
+    }
+  ]
+}

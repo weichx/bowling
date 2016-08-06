@@ -79,6 +79,8 @@ manager.setModel("sphere.json", require("../models/sphere.json"));
 manager.setModel("pin.json", require("../models/pin.json"));
 manager.setMaterial("default", require("../materials/alley.json"));
 manager.setMaterial("pin.mat", require("../materials/pin.json"));
+manager.setMaterial("ball.mat", require("../materials/ball.json"));
+
 manager.init();
 
 module.exports = manager;

@@ -14,6 +14,7 @@ class Material {
         this.shaderPointers.uMVMatrix = gl.getUniformLocation(this.program, "uMVMatrix");
         this.shaderPointers.uSampler = gl.getUniformLocation(this.program, "uSampler");
         this.shaderPointers.uTextureTiling = gl.getUniformLocation(this.program, "uTextureTiling");
+        this.shaderPointers.uNormalMatrix = gl.getUniformLocation(this.program, "uNormalMatrix");
 
     }
 

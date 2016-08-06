@@ -11,7 +11,7 @@ class Camera extends SceneObject {
         this.farClipPlane = 1000.0;
         this.projectionMatrix = mat4.create();
         mat4.identity(this.projectionMatrix);
-        this.setPosition(0, 2, -3);
+        this.setPosition(0, 0.5, -5);
     }
 
     updatePerspectiveMatrix() {
