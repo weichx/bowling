@@ -1,0 +1,15 @@
+{
+  "textures": [
+    {
+      "id": "alley",
+      "path": "./textures/alley.png",
+      "tiling": {
+        "x": 1,
+        "y": 1
+      }
+    }
+  ],
+  "shader": "",
+  "cullFace": true,
+  "blendMode": "none"
+}

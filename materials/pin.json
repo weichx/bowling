@@ -1,0 +1,8 @@
+{
+  "textures": [
+    {
+      "id": "pin.tex",
+      "path": "./textures/bowlingpin.png"
+    }
+  ]
+}
