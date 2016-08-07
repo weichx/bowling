@@ -11,8 +11,9 @@
     <canvas id="render-surface" width="800" height="600"></canvas>
     <div id="app-root">
 
-        <component-splash v-bind:scene-manager="sceneManager"></component-splash>
-        <component-game-start v-bind:scene-manager="sceneManager"></component-game-start>
+        <component-splash v-bind:game-manager="gameManager"></component-splash>
+        <component-game-start v-bind:game-manager="gameManager"></component-game-start>
+        <component-score-board v-if="gameManager.showScoreBoard" v-bind:game-manager="gameManager"></component-score-board>
 
     </div>
 </div>

@@ -10,13 +10,18 @@
   "license": "ISC",
   "dependencies": {
     "cannon": "^0.6.2",
+    "css-loader": "^0.23.1",
     "globby": "^6.0.0",
     "html-loader": "^0.4.3",
     "jasmine": "^2.4.1",
+    "sass-loader": "^4.0.0",
+    "scss-loader": "0.0.1",
+    "style-loader": "^0.13.1",
     "vue": "^1.0.26",
     "webpack": "^1.13.1"
   },
   "devDependencies": {
-    "jasmine": "^2.4.1"
+    "jasmine": "^2.4.1",
+    "node-sass": "^3.8.0"
   }
 }

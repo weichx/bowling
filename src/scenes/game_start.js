@@ -9,19 +9,13 @@ class GameStartScene extends GameScene {
         this.destPoint = vec3.fromValues(0, 2, 16);
     }
 
-    enter() {
-    }
 
     update() {
         const camera = this.sceneManager.camera;
-        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 3);
+        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 5);
         if(vec3.equals(camera.position, this.destPoint)) {
             this.sceneManager.endScene();
         }
-    }
-
-    exit() {
-
     }
 
 }

@@ -5,31 +5,42 @@ webpackJsonp([0],[
 	__webpack_require__(1);
 	__webpack_require__(3);
 	__webpack_require__(15);
-	__webpack_require__(16);
 	__webpack_require__(17);
-	__webpack_require__(2);
 	__webpack_require__(18);
 	__webpack_require__(19);
-	__webpack_require__(24);
-	__webpack_require__(23);
-	__webpack_require__(43);
-	__webpack_require__(44);
-	__webpack_require__(22);
-	__webpack_require__(34);
-	__webpack_require__(14);
-	__webpack_require__(37);
-	__webpack_require__(47);
-	__webpack_require__(35);
-	__webpack_require__(46);
-	__webpack_require__(45);
-	__webpack_require__(48);
-	__webpack_require__(36);
-	__webpack_require__(49);
-	__webpack_require__(41);
-	__webpack_require__(50);
-	__webpack_require__(40);
+	__webpack_require__(20);
+	__webpack_require__(21);
+	__webpack_require__(2);
 	__webpack_require__(38);
-	module.exports = __webpack_require__(19);
+	__webpack_require__(37);
+	__webpack_require__(39);
+	__webpack_require__(44);
+	__webpack_require__(43);
+	__webpack_require__(36);
+	__webpack_require__(33);
+	__webpack_require__(42);
+	__webpack_require__(28);
+	__webpack_require__(14);
+	__webpack_require__(29);
+	__webpack_require__(27);
+	__webpack_require__(24);
+	__webpack_require__(26);
+	__webpack_require__(31);
+	__webpack_require__(30);
+	__webpack_require__(22);
+	__webpack_require__(35);
+	__webpack_require__(34);
+	__webpack_require__(56);
+	__webpack_require__(23);
+	__webpack_require__(32);
+	__webpack_require__(57);
+	__webpack_require__(58);
+	__webpack_require__(60);
+	__webpack_require__(61);
+	__webpack_require__(63);
+	__webpack_require__(54);
+	__webpack_require__(25);
+	module.exports = __webpack_require__(39);
 
 
 /***/ },
@@ -206,7 +217,8 @@ webpackJsonp([0],[
 
 	class SceneObject {
 
-	    constructor(parentNode) {
+	    constructor(parentNode, tag) {
+	        this.tag = tag || "SceneObject";
 	        this.setParent(parentNode);
 	        this.model = null;
 	        this.material = null;
@@ -224,6 +236,21 @@ webpackJsonp([0],[
 	        for (var i = 0; i < this.components.length; i++) {
 	            this.components[i].initialize();
 	        }
+	    }
+
+	    findChild(tag) {
+	        for(var i = 0; i < this.children.length; i++) {
+	            if (this.children[i].tag === tag) return this.children[i];
+	        }
+	        return null;
+	    }
+
+	    findChildren(tag) {
+	        var retn = [];
+	        for(var i = 0; i < this.children.length; i++) {
+	            if (this.children[i].tag === tag) retn.push(this.children[i]);
+	        }
+	        return retn;
 	    }
 
 	    render(parentWorldMatrix, viewMatrix, projectionMatrix) {
@@ -276,8 +303,8 @@ webpackJsonp([0],[
 	        gl.bindTexture(gl.TEXTURE_2D, material.mainTexture);
 	        gl.uniform1i(shaderPointers.uSampler, 0);
 	        gl.uniform2fv(shaderPointers.uTextureTiling, [1, 1]);
-	        //todo draw freaking colliders
-	        gl.drawElements(gl.LINE_STRIP, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
+
+	        gl.drawElements(gl.TRIANGLES, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
 	    }
 
 	    update() {
@@ -287,8 +314,6 @@ webpackJsonp([0],[
 	            this.setPosition(v.x, v.y, v.z);
 	            this.setRotation(q.x, q.y, q.z, q.w);
 	        }
-
-	        //foreach component, update()
 
 	        for (var i = 0; i < this.children.length; i++) {
 	            this.children[i].update();
@@ -356,6 +381,29 @@ webpackJsonp([0],[
 
 /***/ },
 /* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Physics = __webpack_require__(16);
+
+	module.exports = {
+	    GetBallResetPosition: function() { return new Physics.Vec3(0, 1.5, 12) },
+	    PinPositions: [
+	        [-0.4, -0.5, -10.5],
+	        [0.4, -0.5, -10.5],
+	        [1.2, -0.5, -10.5],
+	        [-1.2, -0.5, -10.5],
+	        [0, -0.5, -9.5],
+	        [-0.9, -0.5, -9.5],
+	        [0.9, -0.5, -9.5],
+	        [0.5, -0.5, -8.5],
+	        [-0.5, -0.5, -8.5],
+	        [0, -0.5, -7.5]
+	    ]
+	};
+
+/***/ },
+/* 16 */,
+/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -366,7 +414,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 16 */
+/* 18 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -380,7 +428,24 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 17 */
+/* 19 */
+/***/ function(module, exports) {
+
+	const MouseButton = {
+	    None: 0,
+	    Left: 1 << 0,
+	    Right: 1 << 1,
+	    Middle: 1 << 2
+	};
+
+	MouseButton.LeftOrRight = (MouseButton.Left | MouseButton.Right);
+	MouseButton.Any = (MouseButton.Left | MouseButton.Right | MouseButton.Middle);
+
+
+	module.exports = MouseButton;
+
+/***/ },
+/* 20 */
 /***/ function(module, exports) {
 
 	class EventEmitter {
@@ -459,7 +524,788 @@ webpackJsonp([0],[
 	module.exports = EventEmitter;
 
 /***/ },
-/* 18 */
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GLUtil = __webpack_require__(2);
+	const SceneObject = __webpack_require__(14);
+	const SplashScene = __webpack_require__(22);
+	const GameStartScene = __webpack_require__(26);
+	const GamePlayScene = __webpack_require__(27);
+	const GameSummaryScene = __webpack_require__(31);
+	const TurnManager = __webpack_require__(32);
+	const SceneManager = __webpack_require__(28);
+	const Player = __webpack_require__(33);
+	const Physics = __webpack_require__(16);
+	const Camera = __webpack_require__(3);
+	const Time = __webpack_require__(23);
+	const mat4 = __webpack_require__(4).mat4;
+	const Input = __webpack_require__(37);
+
+	const IdentityMatrix = mat4.create();
+	const PhysicsFixedRate = 1.0 / 60.0;
+
+	class GameManager extends SceneManager {
+
+	    constructor() {
+	        super();
+	        this.showScoreboard = false;
+	        this.paused = false;
+	        this.camera = new Camera();
+	        this.root = new SceneObject();
+	        this.turnManager = null;
+	        this.input = new Input();
+	        this.physics = new Physics.World();
+	        this.physics.solver.iterations = 5;
+	        this.physics.gravity.set(0, -9.82, 0);
+	        this.physics.broadphase = new Physics.NaiveBroadphase();
+	        this.physics.defaultContactMaterial.contactEquationStiffness = 1e6;
+	        this.physics.defaultContactMaterial.contactEquationRelaxation = 10;
+	        this.boundTick = (timestamp) => this.tick(timestamp);
+
+	        this.sceneFlow = [
+	            new SplashScene(this),
+	            new GameStartScene(this),
+	            new GamePlayScene(this),
+	            new GameSummaryScene(this)
+	        ];
+
+	        const gl = GLUtil.getGl();
+	        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+	        gl.clearColor(0.2, 0.2, 0.2, 1.0);
+	        this.tick(0);
+	    }
+
+	    start(playerCount) {
+	        var playerList = [];
+	        for(var i = 0; i < playerCount; i++) {
+	            playerList.push(new Player("Player " + (i + 1)));
+	        }
+	        this.turnManager = new TurnManager(playerList);
+	    }
+
+	    tick(timestamp) {
+	        Time.update(timestamp);
+	        requestAnimationFrame(this.boundTick);
+	        this.input.processInput();
+	        if (this.paused) return;
+	        this.currentScene.update();
+	        this.physics.step(PhysicsFixedRate, Time.deltaTime, 3);
+	        this.root.update();
+	        this.render();
+	    }
+
+	    render() {
+	        const gl = GLUtil.getGl();
+	        this.checkForResize(gl);
+	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	        gl.enable(gl.DEPTH_TEST);
+	        gl.enable(gl.CULL_FACE); //todo -- material dependent
+
+	        var inv = this.camera.getMatrix();
+	        mat4.invert(inv, inv);
+	        this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
+	    }
+
+	    checkForResize(gl) {
+
+	        const windowWidth = window.innerWidth;
+	        const windowHeight = window.innerHeight;
+
+	        if (gl.canvas.width !== windowWidth || gl.canvas.height !== windowHeight) {
+
+	            gl.canvas.width = Math.floor(window.innerWidth);
+	            gl.canvas.height = Math.floor(window.innerHeight);
+	            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+	            this.camera.updatePerspectiveMatrix();
+	        }
+	    }
+
+	}
+
+	module.exports = GameManager;
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Time = __webpack_require__(23);
+	const GameScene = __webpack_require__(24);
+	const vec3 = __webpack_require__(4).vec3;
+	const mat4 = __webpack_require__(4).mat4;
+	const quat = __webpack_require__(4).quat;
+	const degToRad = __webpack_require__(25).degToRad;
+
+	class SplashScene extends GameScene {
+
+	    constructor(sceneManager) {
+	        super("SplashScene", sceneManager);
+	        this.scratchCameraPosition = vec3.create();
+	    }
+
+	    enter() {
+
+	    }
+
+	    update() {
+	        const camera = this.sceneManager.camera;
+
+	        const angle = degToRad(1);
+	        const sinA = Math.sin(angle);
+	        const cosA = Math.cos(angle);
+
+	       // vec3.rotate(camera.position, )
+	        // var p = vec3.create();
+	        // vec3.subtract(p, [0, 0, 0], camera.position);
+	        //
+	        // var x = p[0] * cosA - p[2] * sinA;
+	        // var z = p[0] * sinA + p[2] * cosA;
+	        //
+	        // vec3.add(camera.position, camera.position, [x, 0, z]);
+	        //
+	        // // var x = camera.position[0] * cosA - camera.position[2] * sinA;
+	        // // var z = camera.position[0] * sinA + camera.position[2] * cosA;
+	        //
+	        // // camera.position[0] = x;
+	        // // camera.position[2] = z;
+	        //
+	        // var lookAt = mat4.create();
+	        // mat4.lookAt(lookAt, camera.position, [0, 0, 0], [0, 1, 0]);
+	        // mat4.getRotation(camera.rotation, lookAt);
+
+	    }
+
+	    exit() {
+
+	    }
+
+	}
+
+	module.exports = SplashScene;
+
+/***/ },
+/* 23 */
+/***/ function(module, exports) {
+
+	module.exports = {
+
+	    totalTime: 0,
+	    deltaTime: 0,
+	    lastTime: 0,
+
+	    update(timestamp) {
+	        this.deltaTime = (timestamp - this.lastTime) / 1000.0;
+	        this.totalTime += this.deltaTime;
+	        this.lastTime = timestamp;
+	    }
+	};
+
+/***/ },
+/* 24 */
+/***/ function(module, exports) {
+
+	class GameScene {
+
+	    constructor(name, sceneManager) {
+	        this.name = name;
+	        this.sceneManager = sceneManager;
+	    }
+
+	    enter() { }
+
+	    update() { }
+
+	    exit() { }
+
+	}
+
+	module.exports = GameScene;
+
+/***/ },
+/* 25 */
+/***/ function(module, exports) {
+
+	const RadConstant = Math.PI / 180;
+	const DegreeConstant = 180 / Math.PI;
+
+	module.exports = {
+
+	    degToRad(degrees) {
+	        return degrees * RadConstant;
+	    },
+
+	    radToDeg(radians) {
+	        return radians * DegreeConstant;
+	    },
+
+	    clamp(input, min, max) {
+	        if (input < min) input = min;
+	        if (input > max) input = max;
+	        return input;
+	    }
+
+	};
+
+/***/ },
+/* 26 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GameScene = __webpack_require__(24);
+	const Time = __webpack_require__(23);
+	const vec3 = __webpack_require__(4).vec3;
+
+	class GameStartScene extends GameScene {
+
+	    constructor(sceneManager) {
+	        super("GameStart", sceneManager);
+	        this.destPoint = vec3.fromValues(0, 2, 16);
+	    }
+
+
+	    update() {
+	        const camera = this.sceneManager.camera;
+	        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 5);
+	        if(vec3.equals(camera.position, this.destPoint)) {
+	            this.sceneManager.endScene();
+	        }
+	    }
+
+	}
+
+	module.exports = GameStartScene;
+
+/***/ },
+/* 27 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const SceneManager = __webpack_require__(28);
+	const FrameScene = __webpack_require__(29);
+
+	class GamePlayScene extends SceneManager {
+
+	    constructor(gameManager) {
+	        super();
+	        this.name = "GamePlayScene";
+	        this.gameManager = gameManager;
+	    }
+
+	    enter(){
+	        for(var i = 0; i < 10; i++) {
+	            this.sceneFlow.push(new FrameScene(this, this.gameManager));
+	        }
+	        this.beginScene();
+	    }
+
+	    exit() {
+	        this.endScene();
+	    }
+	}
+
+	module.exports = GamePlayScene;
+
+/***/ },
+/* 28 */
+/***/ function(module, exports) {
+
+	
+	class SceneManager {
+
+	    constructor() {
+	        this.currentSceneIndex = 0;
+	        this.sceneFlow = [];
+	    }
+
+	    beginScene() {
+	        this.currentScene.enter();
+	    }
+
+	    update() {
+	        this.currentScene.update();
+	    }
+
+	    endScene() {
+	        this.currentScene.exit();
+	        this.currentSceneIndex = ++this.currentSceneIndex % this.sceneFlow.length;
+	        this.beginScene();
+	    }
+
+	    get currentScene() {
+	        return this.sceneFlow[this.currentSceneIndex];
+	    }
+	}
+
+	module.exports = SceneManager;
+
+
+
+
+/***/ },
+/* 29 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const SceneManager = __webpack_require__(28);
+	const PlayerTurnScene = __webpack_require__(30);
+
+	class ShowScoreScene {
+
+	    constructor(gameManager) {
+	        this.gameManager = gameManager;
+	    }
+
+	    enter() {
+	        this.gameManager.showScore = true;
+	        setTimeout(() => {
+	            this.gameManager.showScore = false;
+	            //todo end scene
+	        }, 3000);
+	    }
+	}
+
+	class FrameScene extends SceneManager {
+
+	    constructor(parentSceneManager, gameManager) {
+	        super();
+	        this.name = "FrameScene";
+	        this.parentSceneManager = parentSceneManager;
+	        this.gameManager = gameManager;
+	    }
+
+	    enter() {
+	        var playerCount = this.gameManager.turnManager.players.length;
+	        for(var i = 0; i < playerCount; i++) {
+	            this.sceneFlow.push(new PlayerTurnScene(this));
+	        }
+	        this.sceneFlow.push(new ShowScoreScene());
+	        this.beginScene();
+	    }
+
+	}
+
+	module.exports = FrameScene;
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GameScene = __webpack_require__(24);
+	const Constants = __webpack_require__(15);
+	const MouseButton = __webpack_require__(19);
+	const Vec3 = __webpack_require__(16).Vec3;
+	const Time = __webpack_require__(23);
+
+	var pt1 = new Vec3(2, 1.5, 12);
+	var pt2 = new Vec3(-2, 1.5, 12);
+
+	const TurnState = {
+	    RollSelect: 0,
+	    BallRolling: 1
+	};
+
+	class PlayerTurnScene extends GameScene {
+
+	    constructor(sceneManager) {
+	        super("PlayerTurn", sceneManager);
+	        this.ball = null;
+	        this.isCameraPositioned = false;
+	        this.oscilationPoint = pt1;
+	        this.state = TurnState.RollSelect;
+	    }
+
+	    enter() {
+	        this.sceneManager.gameManager.root.findChildren("pin");
+	        this.ball = this.sceneManager.gameManager.root.findChild("ball");
+	        this.ball.rigidBody.position = Constants.GetBallResetPosition();
+	        this.sceneManager.gameManager.physics.removeBody(this.ball.rigidBody);
+	        //todo reset pins
+	    }
+
+	    update() {
+	        switch (this.state) {
+	            case TurnState.RollSelect:
+	                this.oscillateBall();
+	                if (this.sceneManager.gameManager.input.getMouseButton(MouseButton.Left)) {
+	                    this.launchBall();
+	                    this.state = TurnState.BallRolling;
+	                }
+	                return;
+	            case TurnState.BallRolling:
+	                if(this.ball.rigidBody.position.y < -5) {
+	                    this.sceneManager.endScene();
+	                }
+	                break;
+	        }
+	    }
+
+	    exit() {}
+
+	    launchBall() {
+	        this.sceneManager.gameManager.physics.addBody(this.ball.rigidBody);
+
+	        this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -100), this.ball.rigidBody.position.vsub({
+	            x: 0, y: 0, z: 0.25
+	        }));
+	    }
+
+	    oscillateBall() {
+	        if (this.oscilationPoint === pt1) {
+	            this.ball.rigidBody.position.x += Time.deltaTime * 2;
+	            if (this.ball.rigidBody.position.x >= pt1.x) {
+	                this.oscilationPoint = pt2;
+	            }
+	        }
+	        else if (this.oscilationPoint === pt2) {
+	            this.ball.rigidBody.position.x -= Time.deltaTime * 2;
+	            if (this.ball.rigidBody.position.x <= pt2.x) {
+	                this.oscilationPoint = pt1;
+	            }
+	        }
+	    }
+	}
+
+	module.exports = PlayerTurnScene;
+
+/***/ },
+/* 31 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GameScene = __webpack_require__(24);
+
+	class GameSummaryScene extends GameScene {
+
+	    constructor(sceneManager) {
+	        super("GamePlay", sceneManager);
+	    }
+
+	}
+
+	module.exports = GameSummaryScene;
+
+/***/ },
+/* 32 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GameEvent = __webpack_require__(18);
+	const EventEmitter = __webpack_require__(20);
+
+	class TurnManager extends EventEmitter {
+
+	    constructor(players) {
+	        super();
+	        this.players = players;
+	        this.currentPlayerIdx = 0;
+	        this.currentFrameNumber = 0;
+	        this.totalFrames = 10;
+	    }
+
+	    startGame(frameCount) {
+	        this.totalFrames = frameCount || 10;
+	        this.currentPlayerIdx = 0;
+	        this.currentFrameNumber = 0;
+	        for(var i = 0; i < this.players.length; i++) {
+	            this.players[i].scoreKeeper.beginNewGame(this.totalFrames);
+	        }
+	        this.beginFrame();
+	    }
+
+	    beginFrame() {
+	        this.currentFrameNumber++;
+	        this.emit(GameEvent.BeginFrame, this.currentFrameNumber);
+	        this.beginTurn();
+	    }
+
+	    beginTurn() {
+	        this.emit(GameEvent.BeginTurn, this.currentPlayer, this.currentFrameNumber);
+	        this.currentPlayer.scoreKeeper.beginNewFrame();
+	    }
+
+	    recordScore(pins) {
+	        //dont record points if the game is over
+	        if(this.isGameOver) return;
+	        const scoreKeeper = this.currentPlayer.scoreKeeper;
+	        scoreKeeper.recordScore(pins);
+	        //if we are done rolling, end the turn. Note for the last frame
+	        //this could be up to 3 rolls.
+	        if (scoreKeeper.isCurrentRollingCompleted) {
+	            this.endTurn();
+	        }
+	    }
+
+	    endTurn() {
+	        this.emit(GameEvent.EndTurn, this.currentPlayer, this.currentFrameNumber);
+	        this.currentPlayerIdx = ++this.currentPlayerIdx % this.players.length;
+	        //when we wrap around to the first player again we know the frame is over.
+	        //if the frame isn't completed, start the next player's turn
+	        if (this.currentPlayerIdx === 0) {
+	            this.endFrame();
+	        }
+	        else {
+	            this.beginTurn();
+	        }
+	    }
+
+	    endFrame() {
+	        this.emit(GameEvent.EndFrame, this.currentFrameNumber);
+	        if (!this.isGameOver) {
+	            this.beginFrame();
+	        }
+	    }
+
+	    get isGameOver() {
+	        return this.currentFrameNumber >= this.totalFrames
+	            && this.players.every(function (player) {
+	                return player.scoreKeeper.isCurrentRollingCompleted;
+	            });
+	    }
+
+	    get currentPlayer() {
+	        return this.players[this.currentPlayerIdx];
+	    }
+	}
+
+	module.exports = TurnManager;
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const ScoreKeeper = __webpack_require__(34);
+	const PlayerStats = __webpack_require__(36);
+
+	class Player {
+
+	    constructor(name) {
+	        this.name = name;
+	        this.stats = new PlayerStats();
+	        this.scoreKeeper = new ScoreKeeper();
+	    }
+
+	}
+
+	module.exports = Player;
+
+/***/ },
+/* 34 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const ScoreFrame = __webpack_require__(35);
+
+	class ScoreKeeper {
+
+	    constructor() {
+	        this.currentFrameIndex = -1;
+	        this.frames = [];
+	        this.pendingList = [];
+	    }
+
+	    beginNewGame(frameCount) {
+	        this.currentFrameIndex = -1;
+	        this.frames = new Array(frameCount);
+	        for (var i = 0; i < frameCount; i++) {
+	            this.frames[i] = new ScoreFrame(i === frameCount - 1);
+	        }
+	    }
+
+	    beginNewFrame() {
+	        this.currentFrameIndex++;
+	        this.pendingList.push(this.frames[this.currentFrameIndex]);
+	    }
+
+	    recordScore(pins) {
+	        for(var i = 0; i < this.pendingList.length; i++) {
+	            const pendingFrame = this.pendingList[i];
+	            pendingFrame.scoreRoll(pins);
+
+	            if(pendingFrame.isScoringCompleted) {
+	                this.pendingList.splice(i--, 1);
+	            }
+	        }
+	    }
+
+	    get totalScore() {
+	        return this.frames.reduce(function(prev, current, idx, array) {
+	            return prev + array[idx].score;
+	        }, 0);
+	    }
+
+	    get isCurrentRollingCompleted() {
+	        return this.frames[this.currentFrameIndex].isRollingCompleted;
+	    }
+
+	    get isCurrentScoringCompleted() {
+	        return this.frames[this.currentFrameIndex].isScoringCompleted;
+	    }
+
+	    get currentFrame() {
+	        return this.frames[this.currentFrameIndex];
+	    }
+
+	}
+
+	module.exports = ScoreKeeper;
+
+/***/ },
+/* 35 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const clamp = __webpack_require__(25).clamp;
+	const FrameResult = __webpack_require__(17);
+
+	class ScoreFrame {
+
+	    constructor(isLastFrame) {
+	        this.isLastFrame = isLastFrame;
+	        this.frameResult = FrameResult.Pending;
+	        this.totalRolls = 0;
+	        this.score = 0;
+	    }
+
+	    scoreRoll(pinCount) {
+	        this.totalRolls++;
+	        this.score += clamp(pinCount, 0, 10);
+	        if (this.frameResult === FrameResult.Pending) {
+
+	            if (this.score === 10 && this.totalRolls === 1) {
+	                this.frameResult = FrameResult.Strike;
+	            }
+	            else if (this.score === 10 && this.totalRolls === 2) {
+	                this.frameResult = FrameResult.Spare;
+	            }
+	            else if (this.totalRolls === 2) {
+	                this.frameResult = FrameResult.Open;
+	            }
+	        }
+	    }
+
+	    get isScoringCompleted() {
+	        if(this.isSpare || this.isStrike) return this.totalRolls === 3;
+	        return !this.isPending;
+	    }
+
+	    get isRollingCompleted() {
+	        if(this.isLastFrame) {
+	            var targetRolls = (this.isStrike || this.isSpare) ? 3 : 2;
+	            return targetRolls === this.totalRolls;
+	        }
+	        else {
+	            return !this.isPending;
+	        }
+	    }
+
+	    get isStrike() {
+	        return this.frameResult === FrameResult.Strike;
+	    }
+
+	    get isSpare() {
+	        return this.frameResult === FrameResult.Spare;
+	    }
+
+	    get isPending() {
+	        return this.frameResult === FrameResult.Pending;
+	    }
+
+	    get isOpen() {
+	        return this.frameResult === FrameResult.Open;
+	    }
+
+	}
+
+	module.exports = ScoreFrame;
+
+/***/ },
+/* 36 */
+/***/ function(module, exports) {
+
+	class PlayerStats {
+
+	    constructor() {
+	        this.gamesPlayed = 0;
+	        this.gamesWon = 0;
+	        this.totalSpares = 0;
+	        this.totalStrikes = 0;
+	        this.highScore = 0;
+	        this.totalScore = 0;
+	    }
+	}
+
+	module.exports = PlayerStats;
+
+/***/ },
+/* 37 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const MouseButton = __webpack_require__(19);
+
+	const MinDragRadius = 8;
+
+	class Input {
+
+	    constructor() {
+
+	        this.mouseX = 0;
+	        this.mouseY = 0;
+	        this.lastMouseX = 0;
+	        this.lastMouseY = 0;
+	        this.dragOriginX = 0;
+	        this.dragOriginY = 0;
+	        this.isDragging = false;
+	        this.mouseState = MouseButton.None;
+	        this.lastMouseState = MouseButton.None;
+	        this.boundMouseHandler = (evt) => {
+	            this.handleMouseEvent(evt);
+	        };
+	        //todo handle enter / exit
+	        document.addEventListener("mousedown", this.boundMouseHandler, false);
+	        document.addEventListener("mousemove", this.boundMouseHandler, false);
+	        document.addEventListener("mouseup", this.boundMouseHandler, false);
+	    }
+
+	    handleMouseEvent(evt) {
+	        this.lastMouseX = this.mouseX;
+	        this.lastMouseY = this.mouseY;
+	        this.mouseX = evt.clientX;
+	        this.mouseY = evt.clientY;
+	        this.mouseState = evt.buttons;
+	        evt.stopPropagation();
+	        evt.preventDefault();
+	    }
+
+	    getMouseButton(button) {
+	        return (this.mouseState & button) !== 0;
+	    }
+
+	    getMouseButtonDown(button) {
+	        return (this.mouseState & button) !== 0 && (this.lastMouseState & button) === 0;
+	    }
+
+	    getMouseButtonUp(button) {
+	        return (this.mouseState & button) === 0 && (this.lastMouseState & button) !== 0;
+	    }
+
+	    processInput() {
+	        if (!this.isDragging && this.getMouseButtonDown(MouseButton.Left)) {
+	            this.dragOriginX = this.mouseX;
+	            this.dragOriginY = this.mouseY;
+	        }
+	        if (!this.isDragging && this.getMouseButton(MouseButton.Left)) {
+	            var distX = (this.dragOriginX - this.mouseX);
+	            var distY = (this.dragOriginY - this.mouseY);
+	            this.isDragging = (distX * distX + distY * distY) >= MinDragRadius * MinDragRadius;
+	        }
+	        if (this.getMouseButtonUp(MouseButton.Left)) {
+	            this.isDragging = false;
+	            this.dragOriginX = 0;
+	            this.dragOriginY = 0;
+	        }
+
+	        this.lastMouseState = this.mouseState;
+	    }
+
+	}
+
+	module.exports = Input;
+
+/***/ },
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	 __webpack_require__(2).initGL("render-surface");
@@ -555,21 +1401,24 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 19 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(20);
-	const ResourceManager = __webpack_require__(22);
-	const SceneManager = __webpack_require__(34);
+	const Vue = __webpack_require__(40);
+	const ResourceManager = __webpack_require__(42);
+	const GameManager = __webpack_require__(21);
 	const SceneObject = __webpack_require__(14);
-	const Physics = __webpack_require__(39);
+	const Physics = __webpack_require__(16);
+	const Constants = __webpack_require__(15);
 	const vec3 = __webpack_require__(4).vec3;
+	const PinPositions = Constants.PinPositions;
+	const GetBallResetPosition = Constants.GetBallResetPosition;
 
 	ResourceManager.readyPromise.then(() => {
 
-	    const sceneManager = new SceneManager();
+	    const gameManager = new GameManager();
 
-	    var alley = new SceneObject(sceneManager.root);
+	    var alley = new SceneObject(gameManager.root, "alley");
 	    alley.model = ResourceManager.getModel("cube.json");
 	    alley.material = ResourceManager.getMaterial("default");
 	    alley.scale = vec3.fromValues(5, 0.2, 25);
@@ -579,63 +1428,42 @@ webpackJsonp([0],[
 	        position: new Physics.Vec3(0, -0.5, 0) //need this collider lower than its mesh
 	    });
 
-	    var ball = new SceneObject(sceneManager.root);
-	    ball.setPosition(0, 1.5, 12);
+	    var ball = new SceneObject(gameManager.root, "ball");
 	    ball.model = ResourceManager.getModel("sphere.json");
 	    ball.material = ResourceManager.getMaterial("ball.mat");
 	    ball.rigidBody = new Physics.Body({
 	        mass: 5, // kg
-	        position: new Physics.Vec3(ball.position[0], ball.position[1], ball.position[2]),
+	        position: GetBallResetPosition(),
 	        shape: new Physics.Sphere(0.5)
 	    });
 
-	    sceneManager.physics.addBody(ball.rigidBody);
-	    sceneManager.physics.addBody(alley.rigidBody);
-
-	    window.push = function() {
-	        var world = new Physics.Vec3(ball.position[0], ball.position[1], ball.position[2]);
-	        ball.rigidBody.applyImpulse(new Physics.Vec3(0, 0, -100), world);//new Physics.Vec3(0, 0.5, 15));
-	    };
-
-	    var pinPositions = [
-	        [-0.4, -0.5, -10.5],
-	        [0.4, -0.5, -10.5],
-	        [1.2, -0.5, -10.5],
-	        [-1.2, -0.5, -10.5],
-	        [0, -0.5, -9.5],
-	        [-0.9, -0.5, -9.5],
-	        [0.9, -0.5, -9.5],
-	        [0.5, -0.5, -8.5],
-	        [-0.5, -0.5, -8.5],
-	        [0, -0.5, -7.5]
-	    ];
+	    gameManager.physics.addBody(ball.rigidBody);
+	    gameManager.physics.addBody(alley.rigidBody);
 
 	    for (var i = 0; i < 10; i++) {
-	        var pin = new SceneObject(sceneManager.root);
+	        var pin = new SceneObject(gameManager.root, "pin");
 	        pin.model = ResourceManager.getModel("pin.json");
 	        pin.material = ResourceManager.getMaterial("pin.mat");
-	        pin.setPosition(pinPositions[i][0], pinPositions[i][1], pinPositions[i][2]);
+	        pin.setPosition(PinPositions[i][0], PinPositions[i][1], PinPositions[i][2]);
 	        pin.scale = vec3.fromValues(0.5, 0.5, 0.5);
-	        var cylinderBody = new Physics.Box(new Physics.Vec3(0.2, 0.2, 0.2));//(0.1, 0.1, 2, 5) //todo this aint right, cant visualize it
-
-	        pin.rigidBody = new Physics.Body({
-	            mass: 1,
-	            position: new Physics.Vec3(pinPositions[i][0], pinPositions[i][1], pinPositions[i][2]),
-	            shape: cylinderBody
-	        });
-
-	        sceneManager.physics.addBody(pin.rigidBody);
+	        // var cylinderBody = new Physics.Box(new Physics.Vec3(0.2, 0.2, 0.2));//(0.1, 0.1, 2, 5) //todo this aint right, cant visualize it
+	        //
+	        // pin.rigidBody = new Physics.Body({
+	        //     mass: 1,
+	        //     position: new Physics.Vec3(pinPositions[i][0], pinPositions[i][1], pinPositions[i][2]),
+	        //     shape: cylinderBody
+	        // });
+	        //
+	        // gameManager.physics.addBody(pin.rigidBody);
 	    }
-
-	    sceneManager.start();
 
 	    new Vue({
 	        el: "#app-root",
 	        data: function () {
-	           return { sceneManager }
+	           return { gameManager }
 	        },
 	        components: {
-	            splash: __webpack_require__(40)
+	            splash: __webpack_require__(54)
 	        }
 	    });
 	});
@@ -663,14 +1491,14 @@ webpackJsonp([0],[
 	//sceneflow.start
 
 /***/ },
-/* 20 */,
-/* 21 */,
-/* 22 */
+/* 40 */,
+/* 41 */,
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
-	const Model = __webpack_require__(23);
-	const Material = __webpack_require__(24);
+	const Model = __webpack_require__(43);
+	const Material = __webpack_require__(44);
 
 	class ResourceManager {
 
@@ -742,21 +1570,21 @@ webpackJsonp([0],[
 	}
 
 	var manager = new ResourceManager();
-	manager.setShader("default", __webpack_require__(25), __webpack_require__(26));
-	manager.setModel("cube.json", __webpack_require__(27));
-	manager.setModel("quad.json", __webpack_require__(28));
-	manager.setModel("sphere.json", __webpack_require__(29));
-	manager.setModel("pin.json", __webpack_require__(30));
-	manager.setMaterial("default", __webpack_require__(31));
-	manager.setMaterial("pin.mat", __webpack_require__(32));
-	manager.setMaterial("ball.mat", __webpack_require__(33));
+	manager.setShader("default", __webpack_require__(45), __webpack_require__(46));
+	manager.setModel("cube.json", __webpack_require__(47));
+	manager.setModel("quad.json", __webpack_require__(48));
+	manager.setModel("sphere.json", __webpack_require__(49));
+	manager.setModel("pin.json", __webpack_require__(50));
+	manager.setMaterial("default", __webpack_require__(51));
+	manager.setMaterial("pin.mat", __webpack_require__(52));
+	manager.setMaterial("ball.mat", __webpack_require__(53));
 
 	manager.init();
 
 	module.exports = manager;
 
 /***/ },
-/* 23 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -806,7 +1634,7 @@ webpackJsonp([0],[
 	module.exports = Model;
 
 /***/ },
-/* 24 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -834,19 +1662,19 @@ webpackJsonp([0],[
 	module.exports = Material;
 
 /***/ },
-/* 25 */
+/* 45 */
 /***/ function(module, exports) {
 
 	module.exports = "\r\nattribute vec3 aVertexPosition;\r\nattribute vec3 aNormalPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat4 uMVMatrix;\r\nuniform mat4 uPMatrix;\r\n//uniform mat4 uNormalMatrix;\r\n\r\n//varying vec3 vNormal;\r\nvarying vec3 vPosition;\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void) {\r\n    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\r\n    //vec4 unprojectedPosition = uMVMatrix * vec4(aVertexPosition, 1);\r\n    //vNormal = vec3(uNormalMatrix * vec4(aNormalPosition, 0));\r\n    vTextureCoord = aTextureCoord;\r\n}"
 
 /***/ },
-/* 26 */
+/* 46 */
 /***/ function(module, exports) {
 
 	module.exports = "precision mediump float;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform vec2 uTextureTiling;\r\n\r\n//precision mediump float;\r\n//precision mediump int;\r\n//\r\n//uniform vec3 u_lightColor;\r\n//uniform vec3 u_lightDir;\r\n//uniform vec3 u_lightPos;\r\n//uniform vec3 u_viewPos;\r\n//uniform vec3 u_diffuseColor;\r\n//uniform float u_roughness;\r\n//uniform float u_fresnel;\r\n//uniform float u_alpha;\r\n//uniform vec3 u_ambientColor;\r\n//uniform samplerCube u_tCube;\r\n//uniform float u_time;\r\n//varying vec4 vPosition;\r\n//varying vec3 vViewPosition;\r\n//varying vec4 vNormal;\r\n//varying vec3 vViewNormal;\r\n//varying vec2 vUv;\r\n//\r\n//#define M_PI 3.1415926535897932384626433832795\r\n//\r\n//float dotClamped(vec3 a, vec3 b) {\r\n//    return max(dot(a,b), 0.0);\r\n//}\r\n//\r\n//float F(float f0, vec3 l, vec3 h) {\r\n//    float LoH = dot(l,h);\r\n//    float powTerm = (-5.55473 * LoH - 6.98316) * LoH;\r\n//    return f0 + (1.0 - f0) * pow(2.0, powTerm);\r\n//}\r\n//\r\n//float N(float a, vec3 n, vec3 h, float NoH) {\r\n//    float a2 = a*a;\r\n//    return a2 / (4.0 * pow(pow(NoH, 2.0) * (a2 - 1.0) + 1.0, 2.0));\r\n//}\r\n//\r\n//float G(float a, vec3 l, vec3 v, vec3 h, vec3 n, float NoL, float NoV) {\r\n//    float VdotH = max(dot(v,h), 0.0);\r\n//    float NdotH = max(dot(n,h), 0.0);\r\n//    float minV = 2.0 * NdotH * min(NoV, NoL) / VdotH;\r\n//    return min(1.0, minV);\r\n//}\r\n\r\nvoid main(void) {\r\n    vec2 texCoord = vTextureCoord * uTextureTiling;\r\n    vec4 albedo = texture2D(uSampler, texCoord);\r\n    gl_FragColor = albedo;\r\n}\r\n\r\n//param, normal dist, shadowing, main"
 
 /***/ },
-/* 27 */
+/* 47 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1093,7 +1921,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 28 */
+/* 48 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1150,7 +1978,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 29 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -7593,7 +8421,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 30 */
+/* 50 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -10468,7 +11296,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 31 */
+/* 51 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -10488,7 +11316,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 32 */
+/* 52 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -10501,7 +11329,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 33 */
+/* 53 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -10514,239 +11342,17 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 34 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GLUtil = __webpack_require__(2);
-	const SceneObject = __webpack_require__(14);
-	const SplashScene = __webpack_require__(35);
-	const GameStartScene = __webpack_require__(47);
-	const Physics = __webpack_require__(39);
-	const Camera = __webpack_require__(3);
-	const Time = __webpack_require__(36);
-	const mat4 = __webpack_require__(4).mat4;
+	const Vue = __webpack_require__(40);
 
-	const IdentityMatrix = mat4.create();
-	const PhysicsFixedRate = 1.0 / 60.0;
+	module.exports = Vue.component('component-splash', {
+	    template: __webpack_require__(55),
 
-	class SceneManager {
-
-	    constructor() {
-	        this.paused = false;
-	        this.camera = new Camera();
-	        this.root = new SceneObject();
-	        this.turnManager = null;
-	        this.currentSceneIndex = 0;
-	        this.physics = new Physics.World();
-	        this.physics.solver.iterations = 5;
-	        this.physics.gravity.set(0, -9.82, 0);
-	        this.physics.broadphase = new Physics.NaiveBroadphase();
-	        this.physics.defaultContactMaterial.contactEquationStiffness = 1e6;
-	        this.physics.defaultContactMaterial.contactEquationRelaxation = 10;
-
-	        this.sceneFlow = [
-	            new SplashScene(this),
-	             new GameStartScene(this),
-	            // new GamePlayScene(),
-	            // new GameSummaryScene()
-	        ];
-	        this.currentScene = this.sceneFlow[this.currentSceneIndex];
-	        this.boundTick = (timestamp) => this.tick(timestamp);
-	    }
-
-	    start() {
-	        const gl = GLUtil.getGl();
-	        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-	        gl.clearColor(0.2, 0.2, 0.2, 1.0);
-	        this.tick(0);
-	    }
-
-	    beginScene() {
-	        this.currentScene.enter();
-	    }
-
-	    endScene() {
-	        this.currentScene.exit();
-	        this.currentSceneIndex = ++this.currentSceneIndex % this.sceneFlow.length;
-	        this.currentScene = this.sceneFlow[this.currentSceneIndex];
-	        this.beginScene();
-	    }
-
-	    tick(timestamp) {
-	        Time.update(timestamp);
-	        requestAnimationFrame(this.boundTick);
-	        if(this.paused) return;
-	        this.currentScene.update();
-	        this.physics.step(PhysicsFixedRate, Time.deltaTime, 3);
-	        this.root.update();
-	        this.render();
-	    }
-
-	    render() {
-	        const gl = GLUtil.getGl();
-	        this.checkForResize(gl);
-	        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	        gl.enable(gl.DEPTH_TEST);
-	        gl.enable(gl.CULL_FACE); //todo -- material dependent
-
-	        var inv = this.camera.getMatrix();
-	        mat4.invert(inv, inv);
-	        this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
-	    }
-
-	    checkForResize(gl) {
-
-	        const windowWidth = window.innerWidth;
-	        const windowHeight = window.innerHeight;
-
-	        if(gl.canvas.width !== windowWidth || gl.canvas.height !== windowHeight) {
-
-	            gl.canvas.width = Math.floor(window.innerWidth);
-	            gl.canvas.height = Math.floor(window.innerHeight);
-	            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-	            this.camera.updatePerspectiveMatrix();
-
-	        }
-	    }
-	}
-
-	module.exports = SceneManager;
-
-
-
-
-/***/ },
-/* 35 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Time = __webpack_require__(36);
-	const GameScene = __webpack_require__(37);
-	const vec3 = __webpack_require__(4).vec3;
-	const mat4 = __webpack_require__(4).mat4;
-	const quat = __webpack_require__(4).quat;
-	const degToRad = __webpack_require__(38).degToRad;
-
-	class SplashScene extends GameScene {
-
-	    constructor(sceneManager) {
-	        super("SplashScene", sceneManager);
-	        this.scratchCameraPosition = vec3.create();
-	    }
-
-	    enter() {
-
-	    }
-
-	    update() {
-	        const camera = this.sceneManager.camera;
-
-	        const angle = degToRad(1);
-	        const sinA = Math.sin(angle);
-	        const cosA = Math.cos(angle);
-
-	       // vec3.rotate(camera.position, )
-	        // var p = vec3.create();
-	        // vec3.subtract(p, [0, 0, 0], camera.position);
-	        //
-	        // var x = p[0] * cosA - p[2] * sinA;
-	        // var z = p[0] * sinA + p[2] * cosA;
-	        //
-	        // vec3.add(camera.position, camera.position, [x, 0, z]);
-	        //
-	        // // var x = camera.position[0] * cosA - camera.position[2] * sinA;
-	        // // var z = camera.position[0] * sinA + camera.position[2] * cosA;
-	        //
-	        // // camera.position[0] = x;
-	        // // camera.position[2] = z;
-	        //
-	        // var lookAt = mat4.create();
-	        // mat4.lookAt(lookAt, camera.position, [0, 0, 0], [0, 1, 0]);
-	        // mat4.getRotation(camera.rotation, lookAt);
-
-	    }
-
-	    exit() {
-
-	    }
-
-	}
-
-	module.exports = SplashScene;
-
-/***/ },
-/* 36 */
-/***/ function(module, exports) {
-
-	module.exports = {
-
-	    totalTime: 0,
-	    deltaTime: 0,
-	    lastTime: 0,
-
-	    update(timestamp) {
-	        this.deltaTime = (timestamp - this.lastTime) / 1000.0;
-	        this.totalTime += this.deltaTime;
-	        this.lastTime = timestamp;
-	    }
-	};
-
-/***/ },
-/* 37 */
-/***/ function(module, exports) {
-
-	class GameScene {
-
-	    constructor(name, sceneManager) {
-	        this.name = name;
-	        this.sceneManager = sceneManager;
-	    }
-
-	    enter() { }
-
-	    update() { }
-
-	    exit() { }
-
-	}
-
-	module.exports = GameScene;
-
-/***/ },
-/* 38 */
-/***/ function(module, exports) {
-
-	const RadConstant = Math.PI / 180;
-	const DegreeConstant = 180 / Math.PI;
-
-	module.exports = {
-
-	    degToRad(degrees) {
-	        return degrees * RadConstant;
-	    },
-
-	    radToDeg(radians) {
-	        return radians * DegreeConstant;
-	    },
-
-	    clamp(input, min, max) {
-	        if (input < min) input = min;
-	        if (input > max) input = max;
-	        return input;
-	    }
-
-	};
-
-/***/ },
-/* 39 */,
-/* 40 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Vue = __webpack_require__(20);
-	const TurnManager = __webpack_require__(41);
-
-	Vue.component('component-splash', {
-	    template: __webpack_require__(42),
-	    props: [{name: 'scene-manager', required: true}],
+	    props: [
+	        {name: 'game-manager',  required: true}
+	    ],
 
 	    data: function () {
 	        return {
@@ -10762,12 +11368,13 @@ webpackJsonp([0],[
 	        },
 
 	        setPlayerCount(count) {
-	            //fade out then play
+
 	            this.$el.classList.remove('slideInDown');
 	            this.$el.classList.add('slideOutUp');
+
 	            setTimeout(() => {
-	                this.sceneManager.turnManager = new TurnManager(count);
-	                this.sceneManager.endScene();
+	                this.gameManager.start(count);
+	                this.gameManager.endScene();
 	            }, 1000);
 
 	        }
@@ -10776,302 +11383,19 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 41 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const GameEvent = __webpack_require__(16);
-	const EventEmitter = __webpack_require__(17);
-
-	class TurnManager extends EventEmitter {
-
-	    constructor(players) {
-	        super();
-	        this.players = players;
-	        this.currentPlayerIdx = 0;
-	        this.currentFrameNumber = 0;
-	        this.totalFrames = 10;
-	    }
-
-	    startGame(frameCount) {
-	        this.totalFrames = frameCount || 10;
-	        this.currentPlayerIdx = 0;
-	        this.currentFrameNumber = 0;
-	        for(var i = 0; i < this.players.length; i++) {
-	            this.players[i].scoreKeeper.beginNewGame(this.totalFrames);
-	        }
-	        this.beginFrame();
-	    }
-
-	    beginFrame() {
-	        this.currentFrameNumber++;
-	        this.emit(GameEvent.BeginFrame, this.currentFrameNumber);
-	        this.beginTurn();
-	    }
-
-	    beginTurn() {
-	        this.emit(GameEvent.BeginTurn, this.currentPlayer, this.currentFrameNumber);
-	        this.currentPlayer.scoreKeeper.beginNewFrame();
-	    }
-
-	    recordScore(pins) {
-	        //dont record points if the game is over
-	        if(this.isGameOver) return;
-	        const scoreKeeper = this.currentPlayer.scoreKeeper;
-	        scoreKeeper.recordScore(pins);
-	        //if we are done rolling, end the turn. Note for the last frame
-	        //this could be up to 3 rolls.
-	        if (scoreKeeper.isCurrentRollingCompleted) {
-	            this.endTurn();
-	        }
-	    }
-
-	    endTurn() {
-	        this.emit(GameEvent.EndTurn, this.currentPlayer, this.currentFrameNumber);
-	        this.currentPlayerIdx = ++this.currentPlayerIdx % this.players.length;
-	        //when we wrap around to the first player again we know the frame is over.
-	        //if the frame isn't completed, start the next player's turn
-	        if (this.currentPlayerIdx === 0) {
-	            this.endFrame();
-	        }
-	        else {
-	            this.beginTurn();
-	        }
-	    }
-
-	    endFrame() {
-	        this.emit(GameEvent.EndFrame, this.currentFrameNumber);
-	        if (!this.isGameOver) {
-	            this.beginFrame();
-	        }
-	    }
-
-	    get isGameOver() {
-	        return this.currentFrameNumber >= this.totalFrames
-	            && this.players.every(function (player) {
-	                return player.scoreKeeper.isCurrentRollingCompleted;
-	            });
-	    }
-
-	    get currentPlayer() {
-	        return this.players[this.currentPlayerIdx];
-	    }
-	}
-
-	module.exports = TurnManager;
-
-/***/ },
-/* 42 */
+/* 55 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"component-main slideInDown\">\r\n\r\n    <!--<div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">-->\r\n\r\n        <!--<div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">-->\r\n\r\n            <!--<div class=\"splash-screen\">-->\r\n                <!--<h1>Bowling With</h1>-->\r\n                <!--<img src=\"./textures/babbel-logo.png\"/>-->\r\n                <!--<p class=\"pulsate\">Click to get rollin...</p>-->\r\n            <!--</div>-->\r\n\r\n        <!--</div>-->\r\n\r\n        <!--<div class=\"flip-back\" v-else>-->\r\n            <!--<div class=\"player-selection-panel\">-->\r\n                <!--<img src=\"./textures/babbel-logo.png\"/>-->\r\n                <!--<p>Select number of players</p>-->\r\n                <!--<div class=\"player-selection-grid\">-->\r\n\r\n                    <!--<div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>-->\r\n                    <!--<div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>-->\r\n                    <!--<div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>-->\r\n                    <!--<div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>-->\r\n\r\n                <!--</div>-->\r\n            <!--</div>-->\r\n        <!--</div>-->\r\n\r\n    <!--</div>-->\r\n\r\n\r\n\r\n\r\n</div>\r\n\r\n\r\n";
+	module.exports = "<div class=\"component-main slideInDown\">\r\n\r\n    <div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">\r\n\r\n        <div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">\r\n\r\n            <div class=\"splash-screen\">\r\n                <h1>Bowling With</h1>\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p class=\"pulsate\">Click to get rollin...</p>\r\n            </div>\r\n\r\n        </div>\r\n\r\n        <div class=\"flip-back\" v-else>\r\n            <div class=\"player-selection-panel\">\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p>Select number of players</p>\r\n                <div class=\"player-selection-grid\">\r\n\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>\r\n\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n    </div>\r\n\r\n</div>\r\n\r\n\r\n";
 
 /***/ },
-/* 43 */
-/***/ function(module, exports) {
-
-	class PlayerStats {
-
-	    constructor() {
-	        this.gamesPlayed = 0;
-	        this.gamesWon = 0;
-	        this.totalSpares = 0;
-	        this.totalStrikes = 0;
-	        this.highScore = 0;
-	        this.totalScore = 0;
-	    }
-	}
-
-	module.exports = PlayerStats;
-
-/***/ },
-/* 44 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const ScoreKeeper = __webpack_require__(45);
-	const PlayerStats = __webpack_require__(43);
-
-	class Player {
-
-	    constructor(name) {
-	        this.name = name;
-	        this.stats = new PlayerStats();
-	        this.scoreKeeper = new ScoreKeeper();
-	    }
-
-	}
-
-	module.exports = Player;
-
-/***/ },
-/* 45 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const ScoreFrame = __webpack_require__(46);
-
-	class ScoreKeeper {
-
-	    constructor() {
-	        this.currentFrameIndex = -1;
-	        this.frames = [];
-	        this.pendingList = [];
-	    }
-
-	    beginNewGame(frameCount) {
-	        this.currentFrameIndex = -1;
-	        this.frames = new Array(frameCount);
-	        for (var i = 0; i < frameCount; i++) {
-	            this.frames[i] = new ScoreFrame(i === frameCount - 1);
-	        }
-	    }
-
-	    beginNewFrame() {
-	        this.currentFrameIndex++;
-	        this.pendingList.push(this.frames[this.currentFrameIndex]);
-	    }
-
-	    recordScore(pins) {
-	        for(var i = 0; i < this.pendingList.length; i++) {
-	            const pendingFrame = this.pendingList[i];
-	            pendingFrame.scoreRoll(pins);
-
-	            if(pendingFrame.isScoringCompleted) {
-	                this.pendingList.splice(i--, 1);
-	            }
-	        }
-	    }
-
-	    get totalScore() {
-	        return this.frames.reduce(function(prev, current, idx, array) {
-	            return prev + array[idx].score;
-	        }, 0);
-	    }
-
-	    get isCurrentRollingCompleted() {
-	        return this.frames[this.currentFrameIndex].isRollingCompleted;
-	    }
-
-	    get isCurrentScoringCompleted() {
-	        return this.frames[this.currentFrameIndex].isScoringCompleted;
-	    }
-
-	    get currentFrame() {
-	        return this.frames[this.currentFrameIndex];
-	    }
-
-	}
-
-	module.exports = ScoreKeeper;
-
-/***/ },
-/* 46 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const clamp = __webpack_require__(38).clamp;
-	const FrameResult = __webpack_require__(15);
-
-	class ScoreFrame {
-
-	    constructor(isLastFrame) {
-	        this.isLastFrame = isLastFrame;
-	        this.frameResult = FrameResult.Pending;
-	        this.totalRolls = 0;
-	        this.score = 0;
-	    }
-
-	    scoreRoll(pinCount) {
-	        this.totalRolls++;
-	        this.score += clamp(pinCount, 0, 10);
-	        if (this.frameResult === FrameResult.Pending) {
-
-	            if (this.score === 10 && this.totalRolls === 1) {
-	                this.frameResult = FrameResult.Strike;
-	            }
-	            else if (this.score === 10 && this.totalRolls === 2) {
-	                this.frameResult = FrameResult.Spare;
-	            }
-	            else if (this.totalRolls === 2) {
-	                this.frameResult = FrameResult.Open;
-	            }
-	        }
-	    }
-
-	    get isScoringCompleted() {
-	        if(this.isSpare || this.isStrike) return this.totalRolls === 3;
-	        return !this.isPending;
-	    }
-
-	    get isRollingCompleted() {
-	        if(this.isLastFrame) {
-	            var targetRolls = (this.isStrike || this.isSpare) ? 3 : 2;
-	            return targetRolls === this.totalRolls;
-	        }
-	        else {
-	            return !this.isPending;
-	        }
-	    }
-
-	    get isStrike() {
-	        return this.frameResult === FrameResult.Strike;
-	    }
-
-	    get isSpare() {
-	        return this.frameResult === FrameResult.Spare;
-	    }
-
-	    get isPending() {
-	        return this.frameResult === FrameResult.Pending;
-	    }
-
-	    get isOpen() {
-	        return this.frameResult === FrameResult.Open;
-	    }
-
-	}
-
-	module.exports = ScoreFrame;
-
-/***/ },
-/* 47 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const GameScene = __webpack_require__(37);
-	const Time = __webpack_require__(36);
-	const vec3 = __webpack_require__(4).vec3;
-
-	class GameStartScene extends GameScene {
-
-	    constructor(sceneManager) {
-	        super("GameStart", sceneManager);
-	        this.destPoint = vec3.fromValues(0, 2, 16);
-	    }
-
-	    enter() {
-	    }
-
-	    update() {
-	        const camera = this.sceneManager.camera;
-	        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 3);
-	        if(vec3.equals(camera.position, this.destPoint)) {
-	            this.sceneManager.endScene();
-	        }
-	    }
-
-	    exit() {
-
-	    }
-
-	}
-
-	module.exports = GameStartScene;
-
-/***/ },
-/* 48 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const SceneObject = __webpack_require__(14);
-	const ResourceManager = __webpack_require__(22);
+	const ResourceManager = __webpack_require__(42);
 	const vec3 = __webpack_require__(4).vec3;
-	const Physics = __webpack_require__(39);
+	const Physics = __webpack_require__(16);
 
 	module.exports = {
 
@@ -11088,108 +11412,422 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 49 */
-/***/ function(module, exports) {
-
-	// const vec3 = require("gl-matrix").vec3;
-	// const quat = require("gl-matrix").quat;
-	// const mat4 = require("gl-matrix").mat4;
-	//
-	// const forward = vec3.create(0, 0, -1);
-	// const right = vec3.create(1, 0, 0);
-	// const up = vec3.create(0, 1, 0);
-	//
-	// class Transform {
-	//
-	//     constructor(sceneObject) {
-	//         var parentTransform = sceneObject && sceneObject.transform;
-	//         this.setParent(parentTransform || null);
-	//         this.sceneObject = sceneObject;
-	//         this.position = vec3.create();
-	//         this.rotation = quat.create();
-	//         quat.identity(this.rotation);
-	//         this.scale = vec3.fromValues(1, 1, 1);
-	//         this.__matrix = mat4.create();
-	//         this.children = [];
-	//     }
-	//
-	//     setScale(x, y, z) {
-	//         vec3.set(this.scale, x, y, z);
-	//     }
-	//
-	//     setRotation(yaw, pitch, roll) {
-	//         throw Error("Not implemented");
-	//     }
-	//
-	//     setPosition(x, y, z) {
-	//         vec3.set(this.position, x, y, z);
-	//     }
-	//
-	//     getMatrix() {
-	//         mat4.identity(this.__matrix);
-	//         mat4.fromRotationTranslationScale(this.__matrix, this.rotation, this.position, this.scale);
-	//         return this.__matrix;
-	//     }
-	//
-	//     setParent(parent) {
-	//         if (this.parent) {
-	//             const idx = this.parent.children.indexOf(this);
-	//             if (idx !== -1) {
-	//                 this.parent.children.splice(idx, 1);
-	//             }
-	//         }
-	//         this.parent = parent;
-	//         if(this.parent) {
-	//             this.parent.children.push(this);
-	//         }
-	//     }
-	//
-	//     getForward() {
-	//         var retn = vec3.create();
-	//         vec3.transformQuat(retn, forward, this.rotation);
-	//         return retn;
-	//     }
-	//
-	//     getRight() {
-	//         var retn = vec3.create();
-	//         vec3.transformQuat(retn, right, this.rotation);
-	//         return retn;
-	//     }
-	//
-	//     getUp() {
-	//         var retn = vec3.create();
-	//         vec3.transformQuat(retn, up, this.rotation);
-	//         return retn;
-	//     }
-	//
-	//     getLocalRotation() {
-	//
-	//     }
-	//
-	//     getWorldMatrix() {
-	//
-	//     }
-	// }
-	//
-	//
-	// module.exports = Transform;
-
-/***/ },
-/* 50 */
+/* 57 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(20);
+	const Vue = __webpack_require__(40);
+
+	Vue.component("component-frame-start", {
+	    template: __webpack_require__(57)
+	});
+
+/***/ },
+/* 58 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Vue = __webpack_require__(40);
 
 	Vue.component("component-game-start", {
-	    template: __webpack_require__(51)
+	    template: __webpack_require__(59)
 	});
 
 
 /***/ },
-/* 51 */
+/* 59 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"component-game-start\"></div>";
+	module.exports = "<div class=\"component-game-start\">\r\n    <h1>Let's Bowl!</h1>\r\n\r\n\r\n</div>";
+
+/***/ },
+/* 60 */
+/***/ function(module, exports) {
+
+	
+
+/***/ },
+/* 61 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Vue = __webpack_require__(40);
+
+	Vue.component("component-player-turn", {
+	    template: __webpack_require__(62)
+	});
+
+/***/ },
+/* 62 */
+/***/ function(module, exports) {
+
+	module.exports = "";
+
+/***/ },
+/* 63 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Vue = __webpack_require__(40);
+	__webpack_require__(64);
+
+	module.exports = Vue.component('component-score-board', {
+	    template: __webpack_require__(68),
+	    props: [{name: 'game-manager', required: true}],
+	    data: function () {
+	        return {}
+	    }
+	});
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(65);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(67)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 65 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(66)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".score-board-container {\n  display: flex;\n  flex-direction: column;\n  color: white;\n  background: #ff8d13;\n  border-radius: 20px; }\n  .score-board-container .score-board {\n    display: flex;\n    flex-direction: row;\n    justify-content: space-around;\n    margin: 1em; }\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 66 */
+/***/ function(module, exports) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	// css base code, injected by the css-loader
+	module.exports = function() {
+		var list = [];
+
+		// return the list of modules as css string
+		list.toString = function toString() {
+			var result = [];
+			for(var i = 0; i < this.length; i++) {
+				var item = this[i];
+				if(item[2]) {
+					result.push("@media " + item[2] + "{" + item[1] + "}");
+				} else {
+					result.push(item[1]);
+				}
+			}
+			return result.join("");
+		};
+
+		// import a list of modules into the list
+		list.i = function(modules, mediaQuery) {
+			if(typeof modules === "string")
+				modules = [[null, modules, ""]];
+			var alreadyImportedModules = {};
+			for(var i = 0; i < this.length; i++) {
+				var id = this[i][0];
+				if(typeof id === "number")
+					alreadyImportedModules[id] = true;
+			}
+			for(i = 0; i < modules.length; i++) {
+				var item = modules[i];
+				// skip already imported module
+				// this implementation is not 100% perfect for weird media query combinations
+				//  when a module is imported multiple times with different media queries.
+				//  I hope this will never occur (Hey this way we have smaller bundles)
+				if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+					if(mediaQuery && !item[2]) {
+						item[2] = mediaQuery;
+					} else if(mediaQuery) {
+						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+					}
+					list.push(item);
+				}
+			}
+		};
+		return list;
+	};
+
+
+/***/ },
+/* 67 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*
+		MIT License http://www.opensource.org/licenses/mit-license.php
+		Author Tobias Koppers @sokra
+	*/
+	var stylesInDom = {},
+		memoize = function(fn) {
+			var memo;
+			return function () {
+				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+				return memo;
+			};
+		},
+		isOldIE = memoize(function() {
+			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+		}),
+		getHeadElement = memoize(function () {
+			return document.head || document.getElementsByTagName("head")[0];
+		}),
+		singletonElement = null,
+		singletonCounter = 0,
+		styleElementsInsertedAtTop = [];
+
+	module.exports = function(list, options) {
+		if(false) {
+			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+		}
+
+		options = options || {};
+		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+		// tags it will allow on a page
+		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+		// By default, add <style> tags to the bottom of <head>.
+		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+		var styles = listToStyles(list);
+		addStylesToDom(styles, options);
+
+		return function update(newList) {
+			var mayRemove = [];
+			for(var i = 0; i < styles.length; i++) {
+				var item = styles[i];
+				var domStyle = stylesInDom[item.id];
+				domStyle.refs--;
+				mayRemove.push(domStyle);
+			}
+			if(newList) {
+				var newStyles = listToStyles(newList);
+				addStylesToDom(newStyles, options);
+			}
+			for(var i = 0; i < mayRemove.length; i++) {
+				var domStyle = mayRemove[i];
+				if(domStyle.refs === 0) {
+					for(var j = 0; j < domStyle.parts.length; j++)
+						domStyle.parts[j]();
+					delete stylesInDom[domStyle.id];
+				}
+			}
+		};
+	}
+
+	function addStylesToDom(styles, options) {
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			if(domStyle) {
+				domStyle.refs++;
+				for(var j = 0; j < domStyle.parts.length; j++) {
+					domStyle.parts[j](item.parts[j]);
+				}
+				for(; j < item.parts.length; j++) {
+					domStyle.parts.push(addStyle(item.parts[j], options));
+				}
+			} else {
+				var parts = [];
+				for(var j = 0; j < item.parts.length; j++) {
+					parts.push(addStyle(item.parts[j], options));
+				}
+				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+			}
+		}
+	}
+
+	function listToStyles(list) {
+		var styles = [];
+		var newStyles = {};
+		for(var i = 0; i < list.length; i++) {
+			var item = list[i];
+			var id = item[0];
+			var css = item[1];
+			var media = item[2];
+			var sourceMap = item[3];
+			var part = {css: css, media: media, sourceMap: sourceMap};
+			if(!newStyles[id])
+				styles.push(newStyles[id] = {id: id, parts: [part]});
+			else
+				newStyles[id].parts.push(part);
+		}
+		return styles;
+	}
+
+	function insertStyleElement(options, styleElement) {
+		var head = getHeadElement();
+		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+		if (options.insertAt === "top") {
+			if(!lastStyleElementInsertedAtTop) {
+				head.insertBefore(styleElement, head.firstChild);
+			} else if(lastStyleElementInsertedAtTop.nextSibling) {
+				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+			} else {
+				head.appendChild(styleElement);
+			}
+			styleElementsInsertedAtTop.push(styleElement);
+		} else if (options.insertAt === "bottom") {
+			head.appendChild(styleElement);
+		} else {
+			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+		}
+	}
+
+	function removeStyleElement(styleElement) {
+		styleElement.parentNode.removeChild(styleElement);
+		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+		if(idx >= 0) {
+			styleElementsInsertedAtTop.splice(idx, 1);
+		}
+	}
+
+	function createStyleElement(options) {
+		var styleElement = document.createElement("style");
+		styleElement.type = "text/css";
+		insertStyleElement(options, styleElement);
+		return styleElement;
+	}
+
+	function createLinkElement(options) {
+		var linkElement = document.createElement("link");
+		linkElement.rel = "stylesheet";
+		insertStyleElement(options, linkElement);
+		return linkElement;
+	}
+
+	function addStyle(obj, options) {
+		var styleElement, update, remove;
+
+		if (options.singleton) {
+			var styleIndex = singletonCounter++;
+			styleElement = singletonElement || (singletonElement = createStyleElement(options));
+			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+		} else if(obj.sourceMap &&
+			typeof URL === "function" &&
+			typeof URL.createObjectURL === "function" &&
+			typeof URL.revokeObjectURL === "function" &&
+			typeof Blob === "function" &&
+			typeof btoa === "function") {
+			styleElement = createLinkElement(options);
+			update = updateLink.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+				if(styleElement.href)
+					URL.revokeObjectURL(styleElement.href);
+			};
+		} else {
+			styleElement = createStyleElement(options);
+			update = applyToTag.bind(null, styleElement);
+			remove = function() {
+				removeStyleElement(styleElement);
+			};
+		}
+
+		update(obj);
+
+		return function updateStyle(newObj) {
+			if(newObj) {
+				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+					return;
+				update(obj = newObj);
+			} else {
+				remove();
+			}
+		};
+	}
+
+	var replaceText = (function () {
+		var textStore = [];
+
+		return function (index, replacement) {
+			textStore[index] = replacement;
+			return textStore.filter(Boolean).join('\n');
+		};
+	})();
+
+	function applyToSingletonTag(styleElement, index, remove, obj) {
+		var css = remove ? "" : obj.css;
+
+		if (styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = replaceText(index, css);
+		} else {
+			var cssNode = document.createTextNode(css);
+			var childNodes = styleElement.childNodes;
+			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+			if (childNodes.length) {
+				styleElement.insertBefore(cssNode, childNodes[index]);
+			} else {
+				styleElement.appendChild(cssNode);
+			}
+		}
+	}
+
+	function applyToTag(styleElement, obj) {
+		var css = obj.css;
+		var media = obj.media;
+
+		if(media) {
+			styleElement.setAttribute("media", media)
+		}
+
+		if(styleElement.styleSheet) {
+			styleElement.styleSheet.cssText = css;
+		} else {
+			while(styleElement.firstChild) {
+				styleElement.removeChild(styleElement.firstChild);
+			}
+			styleElement.appendChild(document.createTextNode(css));
+		}
+	}
+
+	function updateLink(linkElement, obj) {
+		var css = obj.css;
+		var sourceMap = obj.sourceMap;
+
+		if(sourceMap) {
+			// http://stackoverflow.com/a/26603875
+			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+		}
+
+		var blob = new Blob([css], { type: "text/css" });
+
+		var oldSrc = linkElement.href;
+
+		linkElement.href = URL.createObjectURL(blob);
+
+		if(oldSrc)
+			URL.revokeObjectURL(oldSrc);
+	}
+
+
+/***/ },
+/* 68 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"score-board-container\">\r\n    <template v-for=\"player in gameManager.players\">\r\n\r\n        <div class=\"score-board\">\r\n            <div>Player {{($index + 1)}}</div>\r\n\r\n            <div>{{player.scoreKeeper.frames[0].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[1].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[2].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[3].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[4].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[5].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[6].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[7].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[8].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[9].scoreString}}</div>\r\n\r\n            <div>= {{player.scoreKeeper.totalScoreString}}</div>\r\n        </div>\r\n\r\n    </template>\r\n</div>\r\n";
 
 /***/ }
 ]);

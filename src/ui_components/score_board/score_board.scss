@@ -1,0 +1,15 @@
+
+.score-board-container {
+  display: flex;
+  flex-direction: column;
+  color: white;
+  background: rgb(255, 141, 19);
+  border-radius: 20px;
+
+  .score-board {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin: 1em;
+  }
+}

@@ -3,7 +3,7 @@ html, body {
     padding: 0;
     box-sizing: border-box;
     overflow: hidden;
-    font-family: Sans-Serif;
+    font-family: Sans-Serif, serif;
 }
 
 #app-container {
@@ -96,21 +96,15 @@ img {
 }
 
 .pulsate {
-    -webkit-animation: pulsate 2s linear;
-    -webkit-animation-iteration-count: infinite;
+    animation: pulsate 2s linear;
+    animation-iteration-count: infinite;
     opacity: 0.5;
 }
 
 @-webkit-keyframes pulsate {
-    0% {
-        opacity: 0.25;
-    }
-    50% {
-        opacity: 1.0;
-    }
-    100% {
-        opacity: 0.25;
-    }
+    0% { opacity: 0.25; }
+    50% { opacity: 1.0; }
+    100% {opacity: 0.25; }
 }
 
 .player-selection-panel {
@@ -140,4 +134,14 @@ img {
 .player-select-button:hover {
     background: white;
     color: rgb(255, 141, 19);
+}
+
+.component-game-start {
+    position: absolute;
+    top: 50%;
+    margin: 0 auto;
+    color:white;
+    background: rgb(255, 141, 19);
+    border-radius: 20px;
+    padding: 0.5em 1em;
 }

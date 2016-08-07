@@ -10,7 +10,8 @@ const up = vec3.fromValues(0, 1, 0);
 
 class SceneObject {
 
-    constructor(parentNode) {
+    constructor(parentNode, tag) {
+        this.tag = tag || "SceneObject";
         this.setParent(parentNode);
         this.model = null;
         this.material = null;
@@ -28,6 +29,21 @@ class SceneObject {
         for (var i = 0; i < this.components.length; i++) {
             this.components[i].initialize();
         }
+    }
+
+    findChild(tag) {
+        for(var i = 0; i < this.children.length; i++) {
+            if (this.children[i].tag === tag) return this.children[i];
+        }
+        return null;
+    }
+
+    findChildren(tag) {
+        var retn = [];
+        for(var i = 0; i < this.children.length; i++) {
+            if (this.children[i].tag === tag) retn.push(this.children[i]);
+        }
+        return retn;
     }
 
     render(parentWorldMatrix, viewMatrix, projectionMatrix) {
@@ -80,8 +96,8 @@ class SceneObject {
         gl.bindTexture(gl.TEXTURE_2D, material.mainTexture);
         gl.uniform1i(shaderPointers.uSampler, 0);
         gl.uniform2fv(shaderPointers.uTextureTiling, [1, 1]);
-        //todo draw freaking colliders
-        gl.drawElements(gl.LINE_STRIP, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
+
+        gl.drawElements(gl.TRIANGLES, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
     }
 
     update() {
@@ -91,8 +107,6 @@ class SceneObject {
             this.setPosition(v.x, v.y, v.z);
             this.setRotation(q.x, q.y, q.z, q.w);
         }
-
-        //foreach component, update()
 
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].update();

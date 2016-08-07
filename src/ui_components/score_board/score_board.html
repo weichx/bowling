@@ -1,0 +1,22 @@
+<div class="score-board-container">
+    <template v-for="player in gameManager.players">
+
+        <div class="score-board">
+            <div>Player {{($index + 1)}}</div>
+
+            <div>{{player.scoreKeeper.frames[0].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[1].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[2].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[3].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[4].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[5].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[6].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[7].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[8].scoreString}}</div>
+            <div>{{player.scoreKeeper.frames[9].scoreString}}</div>
+
+            <div>= {{player.scoreKeeper.totalScoreString}}</div>
+        </div>
+
+    </template>
+</div>

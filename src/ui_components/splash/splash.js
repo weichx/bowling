@@ -1,9 +1,11 @@
 const Vue = require("vue");
-const TurnManager = require("../../turn_manager");
 
-Vue.component('component-splash', {
+module.exports = Vue.component('component-splash', {
     template: require("./splash.html"),
-    props: [{name: 'scene-manager', required: true}],
+
+    props: [
+        {name: 'game-manager',  required: true}
+    ],
 
     data: function () {
         return {
@@ -19,12 +21,13 @@ Vue.component('component-splash', {
         },
 
         setPlayerCount(count) {
-            //fade out then play
+
             this.$el.classList.remove('slideInDown');
             this.$el.classList.add('slideOutUp');
+
             setTimeout(() => {
-                this.sceneManager.turnManager = new TurnManager(count);
-                this.sceneManager.endScene();
+                this.gameManager.start(count);
+                this.gameManager.endScene();
             }, 1000);
 
         }
