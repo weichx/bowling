@@ -9,7 +9,7 @@ module.exports = {
             '!./src/main.js',
             './src/**/*.js',
         ]).concat(['./src/main.js']),
-        vendor: ['vue']
+        vendor: ['vue', 'cannon', 'gl-matrix']
     },
     output: {
         path: path.resolve(__dirname, 'dist/'),
@@ -24,9 +24,12 @@ module.exports = {
             // { test: /\.js/, loader: "babel-loader" },
             { test: /\.json/, loader: "json" },
             { test: /\.glsl/, loader: "webpack-glsl"},
-            { test: /\.html/, loader: "html" },
+            { test: /\.html/, loader: "html"},
             { test: /\.scss$/, loaders: ["style", "css", "sass"] }
         ]
+    },
+    htmlLoader: {
+        attrs: false
     },
     plugins: [
         new webpack.optimize.CommonsChunkPlugin("vendor", "vendor.bowling.js")

@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Bowling With Babbel</title>
-
+    <link rel="stylesheet" href="./main.css">
 </head>
 <body>
-<canvas id="render-surface" width="800" height="600"></canvas>
+
+<div id="app-container">
+    <canvas id="render-surface" width="800" height="600"></canvas>
+    <div id="app-root">
+
+        <component-splash v-bind:scene-manager="sceneManager"></component-splash>
+        <component-game-start v-bind:scene-manager="sceneManager"></component-game-start>
+
+    </div>
+</div>
+
 <script src="./dist/vendor.bowling.js"></script>
 <script src="./dist/bowling.js"></script>
 </body>

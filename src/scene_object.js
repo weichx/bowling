@@ -80,8 +80,8 @@ class SceneObject {
         gl.bindTexture(gl.TEXTURE_2D, material.mainTexture);
         gl.uniform1i(shaderPointers.uSampler, 0);
         gl.uniform2fv(shaderPointers.uTextureTiling, [1, 1]);
-
-        gl.drawElements(gl.TRIANGLES, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
+        //todo draw freaking colliders
+        gl.drawElements(gl.LINE_STRIP, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
     }
 
     update() {
@@ -91,6 +91,9 @@ class SceneObject {
             this.setPosition(v.x, v.y, v.z);
             this.setRotation(q.x, q.y, q.z, q.w);
         }
+
+        //foreach component, update()
+
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].update();
         }

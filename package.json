@@ -11,6 +11,7 @@
   "dependencies": {
     "cannon": "^0.6.2",
     "globby": "^6.0.0",
+    "html-loader": "^0.4.3",
     "jasmine": "^2.4.1",
     "vue": "^1.0.26",
     "webpack": "^1.13.1"

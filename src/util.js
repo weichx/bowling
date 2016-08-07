@@ -9,6 +9,12 @@ module.exports = {
 
     radToDeg(radians) {
         return radians * DegreeConstant;
+    },
+
+    clamp(input, min, max) {
+        if (input < min) input = min;
+        if (input > max) input = max;
+        return input;
     }
 
 };
