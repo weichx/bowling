@@ -7,8 +7,8 @@ const degToRad = require('../util').degToRad;
 
 class SplashScene extends GameScene {
 
-    constructor(sceneManager) {
-        super("SplashScene", sceneManager);
+    constructor(gameManager) {
+        super("SplashScene", gameManager);
         this.scratchCameraPosition = vec3.create();
     }
 
@@ -17,11 +17,11 @@ class SplashScene extends GameScene {
     }
 
     update() {
-        const camera = this.sceneManager.camera;
-
-        const angle = degToRad(1);
-        const sinA = Math.sin(angle);
-        const cosA = Math.cos(angle);
+        // const camera = this.sceneManager.camera;
+        //
+        // const angle = degToRad(1);
+        // const sinA = Math.sin(angle);
+        // const cosA = Math.cos(angle);
 
        // vec3.rotate(camera.position, )
         // var p = vec3.create();

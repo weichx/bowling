@@ -4,8 +4,8 @@ const MouseButton = require("../e_mouse_button");
 const Vec3 = require("cannon").Vec3;
 const Time = require("../time");
 
-var pt1 = new Vec3(2, 1.5, 12);
-var pt2 = new Vec3(-2, 1.5, 12);
+var pt1 = new Vec3(2, 0.5, 12);
+var pt2 = new Vec3(-2, 0.5, 12);
 
 const TurnState = {
     RollSelect: 0,
@@ -14,44 +14,67 @@ const TurnState = {
 
 class PlayerTurnScene extends GameScene {
 
-    constructor(sceneManager) {
-        super("PlayerTurn", sceneManager);
+    constructor(gameManager) {
+        super("PlayerTurn", gameManager);
         this.ball = null;
-        this.isCameraPositioned = false;
         this.oscilationPoint = pt1;
         this.state = TurnState.RollSelect;
     }
 
     enter() {
-        this.sceneManager.gameManager.root.findChildren("pin");
-        this.ball = this.sceneManager.gameManager.root.findChild("ball");
+        this.initRoll();
+        this.gameManager.showPlayerTurnMessage = true;
+        setTimeout(() => {
+            this.gameManager.showPlayerTurnMessage = false;
+        }, 1000);
+    }
+
+    initRoll() {
+        this.state = TurnState.RollSelect;
+        this.gameManager.root.findChildren("pin");
+        this.ball = this.gameManager.root.findChild("ball");
+        this.ball.position = [0, 0.5, 12];
         this.ball.rigidBody.position = Constants.GetBallResetPosition();
-        this.sceneManager.gameManager.physics.removeBody(this.ball.rigidBody);
+        this.ball.rigidBody.velocity = new Vec3(0, 0, 0);
+        this.ball.rigidBody.force = new Vec3(0, 0, 0);
+        this.gameManager.physics.removeBody(this.ball.rigidBody);
         //todo reset pins
     }
 
     update() {
+        const turnManager = this.gameManager.turnManager;
+
         switch (this.state) {
             case TurnState.RollSelect:
                 this.oscillateBall();
-                if (this.sceneManager.gameManager.input.getMouseButton(MouseButton.Left)) {
+                if (this.gameManager.input.getMouseButton(MouseButton.Left)) {
                     this.launchBall();
-                    this.state = TurnState.BallRolling;
                 }
-                return;
+                break;
             case TurnState.BallRolling:
-                if(this.ball.rigidBody.position.y < -5) {
-                    this.sceneManager.endScene();
+                if (this.ball.rigidBody.position.y < -5) {
+                    var randomPins = Math.random() * 11;
+                    randomPins = randomPins | 0;
+                    console.log("got ", randomPins);
+                    turnManager.recordScore(randomPins);
+                    if (turnManager.currentPlayer.scoreKeeper.isCurrentRollingCompleted) {
+                        console.log("Done rolling");
+                        this.gameManager.endScene();
+                    }
+                    else {
+                        this.initRoll();
+                    }
                 }
                 break;
         }
     }
 
-    exit() {}
+    exit() {
+    }
 
     launchBall() {
-        this.sceneManager.gameManager.physics.addBody(this.ball.rigidBody);
-
+        this.state = TurnState.BallRolling;
+        this.gameManager.physics.addBody(this.ball.rigidBody);
         this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -100), this.ball.rigidBody.position.vsub({
             x: 0, y: 0, z: 0.25
         }));

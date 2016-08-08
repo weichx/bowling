@@ -5,6 +5,21 @@
   color: white;
   background: rgb(255, 141, 19);
   border-radius: 20px;
+  padding: 1em;
+  margin-top: 8em;
+  text-align: center;
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th {
+    padding: 0.5em;
+  }
+  td {
+    padding: 0.25em;
+    border: 1px solid white;
+  }
 
   .score-board {
     display: flex;

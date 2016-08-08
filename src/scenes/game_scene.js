@@ -1,8 +1,8 @@
 class GameScene {
 
-    constructor(name, sceneManager) {
+    constructor(name, gameManager) {
         this.name = name;
-        this.sceneManager = sceneManager;
+        this.gameManager = gameManager;
     }
 
     enter() { }

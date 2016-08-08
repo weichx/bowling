@@ -11,36 +11,34 @@ webpackJsonp([0],[
 	__webpack_require__(20);
 	__webpack_require__(21);
 	__webpack_require__(2);
-	__webpack_require__(38);
-	__webpack_require__(37);
-	__webpack_require__(39);
-	__webpack_require__(44);
-	__webpack_require__(43);
 	__webpack_require__(36);
-	__webpack_require__(33);
+	__webpack_require__(35);
+	__webpack_require__(37);
 	__webpack_require__(42);
-	__webpack_require__(28);
+	__webpack_require__(41);
+	__webpack_require__(54);
+	__webpack_require__(32);
+	__webpack_require__(40);
+	__webpack_require__(31);
 	__webpack_require__(14);
 	__webpack_require__(29);
-	__webpack_require__(27);
 	__webpack_require__(24);
 	__webpack_require__(26);
-	__webpack_require__(31);
-	__webpack_require__(30);
+	__webpack_require__(27);
+	__webpack_require__(28);
 	__webpack_require__(22);
-	__webpack_require__(35);
 	__webpack_require__(34);
-	__webpack_require__(56);
+	__webpack_require__(33);
+	__webpack_require__(55);
 	__webpack_require__(23);
-	__webpack_require__(32);
+	__webpack_require__(30);
+	__webpack_require__(56);
 	__webpack_require__(57);
 	__webpack_require__(58);
-	__webpack_require__(60);
-	__webpack_require__(61);
-	__webpack_require__(63);
-	__webpack_require__(54);
+	__webpack_require__(64);
+	__webpack_require__(52);
 	__webpack_require__(25);
-	module.exports = __webpack_require__(39);
+	module.exports = __webpack_require__(37);
 
 
 /***/ },
@@ -386,7 +384,7 @@ webpackJsonp([0],[
 	const Physics = __webpack_require__(16);
 
 	module.exports = {
-	    GetBallResetPosition: function() { return new Physics.Vec3(0, 1.5, 12) },
+	    GetBallResetPosition: function() { return new Physics.Vec3(0, 0.5, 12) },
 	    PinPositions: [
 	        [-0.4, -0.5, -10.5],
 	        [0.4, -0.5, -10.5],
@@ -531,16 +529,17 @@ webpackJsonp([0],[
 	const SceneObject = __webpack_require__(14);
 	const SplashScene = __webpack_require__(22);
 	const GameStartScene = __webpack_require__(26);
-	const GamePlayScene = __webpack_require__(27);
-	const GameSummaryScene = __webpack_require__(31);
-	const TurnManager = __webpack_require__(32);
-	const SceneManager = __webpack_require__(28);
-	const Player = __webpack_require__(33);
+	const GameSummaryScene = __webpack_require__(27);
+	const PlayerTurnScene = __webpack_require__(28);
+	const FrameScene = __webpack_require__(29);
+	const TurnManager = __webpack_require__(30);
+	const SceneManager = __webpack_require__(31);
+	const Player = __webpack_require__(32);
 	const Physics = __webpack_require__(16);
 	const Camera = __webpack_require__(3);
 	const Time = __webpack_require__(23);
 	const mat4 = __webpack_require__(4).mat4;
-	const Input = __webpack_require__(37);
+	const Input = __webpack_require__(35);
 
 	const IdentityMatrix = mat4.create();
 	const PhysicsFixedRate = 1.0 / 60.0;
@@ -550,6 +549,8 @@ webpackJsonp([0],[
 	    constructor() {
 	        super();
 	        this.showScoreboard = false;
+	        this.showSplashScreen = true;
+	        this.showPlayerTurnMessage = false;
 	        this.paused = false;
 	        this.camera = new Camera();
 	        this.root = new SceneObject();
@@ -565,9 +566,6 @@ webpackJsonp([0],[
 
 	        this.sceneFlow = [
 	            new SplashScene(this),
-	            new GameStartScene(this),
-	            new GamePlayScene(this),
-	            new GameSummaryScene(this)
 	        ];
 
 	        const gl = GLUtil.getGl();
@@ -577,11 +575,25 @@ webpackJsonp([0],[
 	    }
 
 	    start(playerCount) {
+
+	        this.sceneFlow.push(new GameStartScene(this));
+
+	        for(var i = 0; i < 10; i++) {
+	            this.sceneFlow.push(new FrameScene(this));
+	            for(var j = 0; j < playerCount; j++) {
+	                this.sceneFlow.push(new PlayerTurnScene(this));
+	            }
+	        }
+
+	        this.sceneFlow.push(new GameSummaryScene(this));
+
 	        var playerList = [];
-	        for(var i = 0; i < playerCount; i++) {
+	        for(i = 0; i < playerCount; i++) {
 	            playerList.push(new Player("Player " + (i + 1)));
 	        }
 	        this.turnManager = new TurnManager(playerList);
+	        this.turnManager.startGame();
+	        this.beginScene();
 	    }
 
 	    tick(timestamp) {
@@ -638,8 +650,8 @@ webpackJsonp([0],[
 
 	class SplashScene extends GameScene {
 
-	    constructor(sceneManager) {
-	        super("SplashScene", sceneManager);
+	    constructor(gameManager) {
+	        super("SplashScene", gameManager);
 	        this.scratchCameraPosition = vec3.create();
 	    }
 
@@ -648,11 +660,11 @@ webpackJsonp([0],[
 	    }
 
 	    update() {
-	        const camera = this.sceneManager.camera;
-
-	        const angle = degToRad(1);
-	        const sinA = Math.sin(angle);
-	        const cosA = Math.cos(angle);
+	        // const camera = this.sceneManager.camera;
+	        //
+	        // const angle = degToRad(1);
+	        // const sinA = Math.sin(angle);
+	        // const cosA = Math.cos(angle);
 
 	       // vec3.rotate(camera.position, )
 	        // var p = vec3.create();
@@ -706,9 +718,9 @@ webpackJsonp([0],[
 
 	class GameScene {
 
-	    constructor(name, sceneManager) {
+	    constructor(name, gameManager) {
 	        this.name = name;
-	        this.sceneManager = sceneManager;
+	        this.gameManager = gameManager;
 	    }
 
 	    enter() { }
@@ -756,17 +768,21 @@ webpackJsonp([0],[
 
 	class GameStartScene extends GameScene {
 
-	    constructor(sceneManager) {
-	        super("GameStart", sceneManager);
+	    constructor(gameManager) {
+	        super("GameStart", gameManager);
 	        this.destPoint = vec3.fromValues(0, 2, 16);
 	    }
 
 
+	    enter() {
+	        this.gameManager.showSplashScreen = false;
+	    }
+
 	    update() {
-	        const camera = this.sceneManager.camera;
+	        const camera = this.gameManager.camera;
 	        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 5);
-	        if(vec3.equals(camera.position, this.destPoint)) {
-	            this.sceneManager.endScene();
+	        if (vec3.equals(camera.position, this.destPoint)) {
+	            this.gameManager.endScene();
 	        }
 	    }
 
@@ -778,113 +794,20 @@ webpackJsonp([0],[
 /* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const SceneManager = __webpack_require__(28);
-	const FrameScene = __webpack_require__(29);
+	const GameScene = __webpack_require__(24);
 
-	class GamePlayScene extends SceneManager {
+	class GameSummaryScene extends GameScene {
 
-	    constructor(gameManager) {
-	        super();
-	        this.name = "GamePlayScene";
-	        this.gameManager = gameManager;
+	    constructor(sceneManager) {
+	        super("GamePlay", sceneManager);
 	    }
 
-	    enter(){
-	        for(var i = 0; i < 10; i++) {
-	            this.sceneFlow.push(new FrameScene(this, this.gameManager));
-	        }
-	        this.beginScene();
-	    }
-
-	    exit() {
-	        this.endScene();
-	    }
 	}
 
-	module.exports = GamePlayScene;
+	module.exports = GameSummaryScene;
 
 /***/ },
 /* 28 */
-/***/ function(module, exports) {
-
-	
-	class SceneManager {
-
-	    constructor() {
-	        this.currentSceneIndex = 0;
-	        this.sceneFlow = [];
-	    }
-
-	    beginScene() {
-	        this.currentScene.enter();
-	    }
-
-	    update() {
-	        this.currentScene.update();
-	    }
-
-	    endScene() {
-	        this.currentScene.exit();
-	        this.currentSceneIndex = ++this.currentSceneIndex % this.sceneFlow.length;
-	        this.beginScene();
-	    }
-
-	    get currentScene() {
-	        return this.sceneFlow[this.currentSceneIndex];
-	    }
-	}
-
-	module.exports = SceneManager;
-
-
-
-
-/***/ },
-/* 29 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const SceneManager = __webpack_require__(28);
-	const PlayerTurnScene = __webpack_require__(30);
-
-	class ShowScoreScene {
-
-	    constructor(gameManager) {
-	        this.gameManager = gameManager;
-	    }
-
-	    enter() {
-	        this.gameManager.showScore = true;
-	        setTimeout(() => {
-	            this.gameManager.showScore = false;
-	            //todo end scene
-	        }, 3000);
-	    }
-	}
-
-	class FrameScene extends SceneManager {
-
-	    constructor(parentSceneManager, gameManager) {
-	        super();
-	        this.name = "FrameScene";
-	        this.parentSceneManager = parentSceneManager;
-	        this.gameManager = gameManager;
-	    }
-
-	    enter() {
-	        var playerCount = this.gameManager.turnManager.players.length;
-	        for(var i = 0; i < playerCount; i++) {
-	            this.sceneFlow.push(new PlayerTurnScene(this));
-	        }
-	        this.sceneFlow.push(new ShowScoreScene());
-	        this.beginScene();
-	    }
-
-	}
-
-	module.exports = FrameScene;
-
-/***/ },
-/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GameScene = __webpack_require__(24);
@@ -893,8 +816,8 @@ webpackJsonp([0],[
 	const Vec3 = __webpack_require__(16).Vec3;
 	const Time = __webpack_require__(23);
 
-	var pt1 = new Vec3(2, 1.5, 12);
-	var pt2 = new Vec3(-2, 1.5, 12);
+	var pt1 = new Vec3(2, 0.5, 12);
+	var pt2 = new Vec3(-2, 0.5, 12);
 
 	const TurnState = {
 	    RollSelect: 0,
@@ -903,44 +826,67 @@ webpackJsonp([0],[
 
 	class PlayerTurnScene extends GameScene {
 
-	    constructor(sceneManager) {
-	        super("PlayerTurn", sceneManager);
+	    constructor(gameManager) {
+	        super("PlayerTurn", gameManager);
 	        this.ball = null;
-	        this.isCameraPositioned = false;
 	        this.oscilationPoint = pt1;
 	        this.state = TurnState.RollSelect;
 	    }
 
 	    enter() {
-	        this.sceneManager.gameManager.root.findChildren("pin");
-	        this.ball = this.sceneManager.gameManager.root.findChild("ball");
+	        this.initRoll();
+	        this.gameManager.showPlayerTurnMessage = true;
+	        setTimeout(() => {
+	            this.gameManager.showPlayerTurnMessage = false;
+	        }, 1000);
+	    }
+
+	    initRoll() {
+	        this.state = TurnState.RollSelect;
+	        this.gameManager.root.findChildren("pin");
+	        this.ball = this.gameManager.root.findChild("ball");
+	        this.ball.position = [0, 0.5, 12];
 	        this.ball.rigidBody.position = Constants.GetBallResetPosition();
-	        this.sceneManager.gameManager.physics.removeBody(this.ball.rigidBody);
+	        this.ball.rigidBody.velocity = new Vec3(0, 0, 0);
+	        this.ball.rigidBody.force = new Vec3(0, 0, 0);
+	        this.gameManager.physics.removeBody(this.ball.rigidBody);
 	        //todo reset pins
 	    }
 
 	    update() {
+	        const turnManager = this.gameManager.turnManager;
+
 	        switch (this.state) {
 	            case TurnState.RollSelect:
 	                this.oscillateBall();
-	                if (this.sceneManager.gameManager.input.getMouseButton(MouseButton.Left)) {
+	                if (this.gameManager.input.getMouseButton(MouseButton.Left)) {
 	                    this.launchBall();
-	                    this.state = TurnState.BallRolling;
 	                }
-	                return;
+	                break;
 	            case TurnState.BallRolling:
-	                if(this.ball.rigidBody.position.y < -5) {
-	                    this.sceneManager.endScene();
+	                if (this.ball.rigidBody.position.y < -5) {
+	                    var randomPins = Math.random() * 11;
+	                    randomPins = randomPins | 0;
+	                    console.log("got ", randomPins);
+	                    turnManager.recordScore(randomPins);
+	                    if (turnManager.currentPlayer.scoreKeeper.isCurrentRollingCompleted) {
+	                        console.log("Done rolling");
+	                        this.gameManager.endScene();
+	                    }
+	                    else {
+	                        this.initRoll();
+	                    }
 	                }
 	                break;
 	        }
 	    }
 
-	    exit() {}
+	    exit() {
+	    }
 
 	    launchBall() {
-	        this.sceneManager.gameManager.physics.addBody(this.ball.rigidBody);
-
+	        this.state = TurnState.BallRolling;
+	        this.gameManager.physics.addBody(this.ball.rigidBody);
 	        this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -100), this.ball.rigidBody.position.vsub({
 	            x: 0, y: 0, z: 0.25
 	        }));
@@ -965,23 +911,30 @@ webpackJsonp([0],[
 	module.exports = PlayerTurnScene;
 
 /***/ },
-/* 31 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GameScene = __webpack_require__(24);
 
-	class GameSummaryScene extends GameScene {
+	class FrameScene extends GameScene {
 
-	    constructor(sceneManager) {
-	        super("GamePlay", sceneManager);
+	    constructor(gameManager) {
+	        super("FrameScene", gameManager);
 	    }
 
+	    enter() {
+	        this.gameManager.showScoreboard = true;
+	        setTimeout(() => {
+	            this.gameManager.showScoreboard = false;
+	            this.gameManager.endScene();
+	        }, 1500);
+	    }
 	}
 
-	module.exports = GameSummaryScene;
+	module.exports = FrameScene;
 
 /***/ },
-/* 32 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GameEvent = __webpack_require__(18);
@@ -1065,17 +1018,50 @@ webpackJsonp([0],[
 	module.exports = TurnManager;
 
 /***/ },
-/* 33 */
+/* 31 */
+/***/ function(module, exports) {
+
+	
+	class SceneManager {
+
+	    constructor() {
+	        this.currentSceneIndex = 0;
+	        this.sceneFlow = [];
+	    }
+
+	    beginScene() {
+	        this.currentScene.enter();
+	    }
+
+	    update() {
+	        this.currentScene.update();
+	    }
+
+	    endScene() {
+	        this.currentScene.exit();
+	        this.currentSceneIndex = ++this.currentSceneIndex % this.sceneFlow.length;
+	        this.beginScene();
+	    }
+
+	    get currentScene() {
+	        return this.sceneFlow[this.currentSceneIndex];
+	    }
+	}
+
+	module.exports = SceneManager;
+
+
+
+
+/***/ },
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const ScoreKeeper = __webpack_require__(34);
-	const PlayerStats = __webpack_require__(36);
+	const ScoreKeeper = __webpack_require__(33);
 
 	class Player {
 
 	    constructor(name) {
-	        this.name = name;
-	        this.stats = new PlayerStats();
 	        this.scoreKeeper = new ScoreKeeper();
 	    }
 
@@ -1084,10 +1070,10 @@ webpackJsonp([0],[
 	module.exports = Player;
 
 /***/ },
-/* 34 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const ScoreFrame = __webpack_require__(35);
+	const ScoreFrame = __webpack_require__(34);
 
 	class ScoreKeeper {
 
@@ -1144,7 +1130,7 @@ webpackJsonp([0],[
 	module.exports = ScoreKeeper;
 
 /***/ },
-/* 35 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const clamp = __webpack_require__(25).clamp;
@@ -1212,25 +1198,7 @@ webpackJsonp([0],[
 	module.exports = ScoreFrame;
 
 /***/ },
-/* 36 */
-/***/ function(module, exports) {
-
-	class PlayerStats {
-
-	    constructor() {
-	        this.gamesPlayed = 0;
-	        this.gamesWon = 0;
-	        this.totalSpares = 0;
-	        this.totalStrikes = 0;
-	        this.highScore = 0;
-	        this.totalScore = 0;
-	    }
-	}
-
-	module.exports = PlayerStats;
-
-/***/ },
-/* 37 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const MouseButton = __webpack_require__(19);
@@ -1305,7 +1273,7 @@ webpackJsonp([0],[
 	module.exports = Input;
 
 /***/ },
-/* 38 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	 __webpack_require__(2).initGL("render-surface");
@@ -1401,11 +1369,11 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 39 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(40);
-	const ResourceManager = __webpack_require__(42);
+	const Vue = __webpack_require__(38);
+	const ResourceManager = __webpack_require__(40);
 	const GameManager = __webpack_require__(21);
 	const SceneObject = __webpack_require__(14);
 	const Physics = __webpack_require__(16);
@@ -1430,6 +1398,7 @@ webpackJsonp([0],[
 
 	    var ball = new SceneObject(gameManager.root, "ball");
 	    ball.model = ResourceManager.getModel("sphere.json");
+	    ball.scale = vec3.fromValues(0.5, 0.5, 0.5);
 	    ball.material = ResourceManager.getMaterial("ball.mat");
 	    ball.rigidBody = new Physics.Body({
 	        mass: 5, // kg
@@ -1463,7 +1432,7 @@ webpackJsonp([0],[
 	           return { gameManager }
 	        },
 	        components: {
-	            splash: __webpack_require__(54)
+	            splash: __webpack_require__(52)
 	        }
 	    });
 	});
@@ -1491,14 +1460,14 @@ webpackJsonp([0],[
 	//sceneflow.start
 
 /***/ },
-/* 40 */,
-/* 41 */,
-/* 42 */
+/* 38 */,
+/* 39 */,
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
-	const Model = __webpack_require__(43);
-	const Material = __webpack_require__(44);
+	const Model = __webpack_require__(41);
+	const Material = __webpack_require__(42);
 
 	class ResourceManager {
 
@@ -1570,21 +1539,21 @@ webpackJsonp([0],[
 	}
 
 	var manager = new ResourceManager();
-	manager.setShader("default", __webpack_require__(45), __webpack_require__(46));
-	manager.setModel("cube.json", __webpack_require__(47));
-	manager.setModel("quad.json", __webpack_require__(48));
-	manager.setModel("sphere.json", __webpack_require__(49));
-	manager.setModel("pin.json", __webpack_require__(50));
-	manager.setMaterial("default", __webpack_require__(51));
-	manager.setMaterial("pin.mat", __webpack_require__(52));
-	manager.setMaterial("ball.mat", __webpack_require__(53));
+	manager.setShader("default", __webpack_require__(43), __webpack_require__(44));
+	manager.setModel("cube.json", __webpack_require__(45));
+	manager.setModel("quad.json", __webpack_require__(46));
+	manager.setModel("sphere.json", __webpack_require__(47));
+	manager.setModel("pin.json", __webpack_require__(48));
+	manager.setMaterial("default", __webpack_require__(49));
+	manager.setMaterial("pin.mat", __webpack_require__(50));
+	manager.setMaterial("ball.mat", __webpack_require__(51));
 
 	manager.init();
 
 	module.exports = manager;
 
 /***/ },
-/* 43 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -1634,7 +1603,7 @@ webpackJsonp([0],[
 	module.exports = Model;
 
 /***/ },
-/* 44 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -1662,19 +1631,19 @@ webpackJsonp([0],[
 	module.exports = Material;
 
 /***/ },
-/* 45 */
+/* 43 */
 /***/ function(module, exports) {
 
 	module.exports = "\r\nattribute vec3 aVertexPosition;\r\nattribute vec3 aNormalPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat4 uMVMatrix;\r\nuniform mat4 uPMatrix;\r\n//uniform mat4 uNormalMatrix;\r\n\r\n//varying vec3 vNormal;\r\nvarying vec3 vPosition;\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void) {\r\n    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\r\n    //vec4 unprojectedPosition = uMVMatrix * vec4(aVertexPosition, 1);\r\n    //vNormal = vec3(uNormalMatrix * vec4(aNormalPosition, 0));\r\n    vTextureCoord = aTextureCoord;\r\n}"
 
 /***/ },
-/* 46 */
+/* 44 */
 /***/ function(module, exports) {
 
 	module.exports = "precision mediump float;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform vec2 uTextureTiling;\r\n\r\n//precision mediump float;\r\n//precision mediump int;\r\n//\r\n//uniform vec3 u_lightColor;\r\n//uniform vec3 u_lightDir;\r\n//uniform vec3 u_lightPos;\r\n//uniform vec3 u_viewPos;\r\n//uniform vec3 u_diffuseColor;\r\n//uniform float u_roughness;\r\n//uniform float u_fresnel;\r\n//uniform float u_alpha;\r\n//uniform vec3 u_ambientColor;\r\n//uniform samplerCube u_tCube;\r\n//uniform float u_time;\r\n//varying vec4 vPosition;\r\n//varying vec3 vViewPosition;\r\n//varying vec4 vNormal;\r\n//varying vec3 vViewNormal;\r\n//varying vec2 vUv;\r\n//\r\n//#define M_PI 3.1415926535897932384626433832795\r\n//\r\n//float dotClamped(vec3 a, vec3 b) {\r\n//    return max(dot(a,b), 0.0);\r\n//}\r\n//\r\n//float F(float f0, vec3 l, vec3 h) {\r\n//    float LoH = dot(l,h);\r\n//    float powTerm = (-5.55473 * LoH - 6.98316) * LoH;\r\n//    return f0 + (1.0 - f0) * pow(2.0, powTerm);\r\n//}\r\n//\r\n//float N(float a, vec3 n, vec3 h, float NoH) {\r\n//    float a2 = a*a;\r\n//    return a2 / (4.0 * pow(pow(NoH, 2.0) * (a2 - 1.0) + 1.0, 2.0));\r\n//}\r\n//\r\n//float G(float a, vec3 l, vec3 v, vec3 h, vec3 n, float NoL, float NoV) {\r\n//    float VdotH = max(dot(v,h), 0.0);\r\n//    float NdotH = max(dot(n,h), 0.0);\r\n//    float minV = 2.0 * NdotH * min(NoV, NoL) / VdotH;\r\n//    return min(1.0, minV);\r\n//}\r\n\r\nvoid main(void) {\r\n    vec2 texCoord = vTextureCoord * uTextureTiling;\r\n    vec4 albedo = texture2D(uSampler, texCoord);\r\n    gl_FragColor = albedo;\r\n}\r\n\r\n//param, normal dist, shadowing, main"
 
 /***/ },
-/* 47 */
+/* 45 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1921,7 +1890,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 48 */
+/* 46 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1978,7 +1947,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 49 */
+/* 47 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -8421,7 +8390,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 50 */
+/* 48 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11296,7 +11265,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 51 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11316,7 +11285,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 52 */
+/* 50 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11329,7 +11298,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 53 */
+/* 51 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11342,13 +11311,13 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 54 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(40);
+	const Vue = __webpack_require__(38);
 
 	module.exports = Vue.component('component-splash', {
-	    template: __webpack_require__(55),
+	    template: __webpack_require__(53),
 
 	    props: [
 	        {name: 'game-manager',  required: true}
@@ -11383,17 +11352,35 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 55 */
+/* 53 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"component-main slideInDown\">\r\n\r\n    <div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">\r\n\r\n        <div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">\r\n\r\n            <div class=\"splash-screen\">\r\n                <h1>Bowling With</h1>\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p class=\"pulsate\">Click to get rollin...</p>\r\n            </div>\r\n\r\n        </div>\r\n\r\n        <div class=\"flip-back\" v-else>\r\n            <div class=\"player-selection-panel\">\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p>Select number of players</p>\r\n                <div class=\"player-selection-grid\">\r\n\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>\r\n\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n    </div>\r\n\r\n</div>\r\n\r\n\r\n";
 
 /***/ },
-/* 56 */
+/* 54 */
+/***/ function(module, exports) {
+
+	class PlayerStats {
+
+	    constructor() {
+	        this.gamesPlayed = 0;
+	        this.gamesWon = 0;
+	        this.totalSpares = 0;
+	        this.totalStrikes = 0;
+	        this.highScore = 0;
+	        this.totalScore = 0;
+	    }
+	}
+
+	module.exports = PlayerStats;
+
+/***/ },
+/* 55 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const SceneObject = __webpack_require__(14);
-	const ResourceManager = __webpack_require__(42);
+	const ResourceManager = __webpack_require__(40);
 	const vec3 = __webpack_require__(4).vec3;
 	const Physics = __webpack_require__(16);
 
@@ -11412,87 +11399,66 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 57 */
+/* 56 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(40);
+	const Vue = __webpack_require__(38);
 
 	Vue.component("component-frame-start", {
-	    template: __webpack_require__(57)
+	    template: __webpack_require__(56)
 	});
 
 /***/ },
-/* 58 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Vue = __webpack_require__(40);
-
-	Vue.component("component-game-start", {
-	    template: __webpack_require__(59)
-	});
-
-
-/***/ },
-/* 59 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"component-game-start\">\r\n    <h1>Let's Bowl!</h1>\r\n\r\n\r\n</div>";
-
-/***/ },
-/* 60 */
+/* 57 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 61 */
+/* 58 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(40);
+	const Vue = __webpack_require__(38);
+
+	const messages = [
+	    "time to shine!",
+	    "ready to roll!",
+	    "knock em' dead!",
+	    "jetzt gehts los!",
+	    "Vamanos! Rapido!",
+	    "pin-Pocolypse Now!"
+	];
+
+	__webpack_require__(59);
 
 	Vue.component("component-player-turn", {
-	    template: __webpack_require__(62)
-	});
-
-/***/ },
-/* 62 */
-/***/ function(module, exports) {
-
-	module.exports = "";
-
-/***/ },
-/* 63 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Vue = __webpack_require__(40);
-	__webpack_require__(64);
-
-	module.exports = Vue.component('component-score-board', {
-	    template: __webpack_require__(68),
-	    props: [{name: 'game-manager', required: true}],
-	    data: function () {
-	        return {}
+	    template: __webpack_require__(63),
+	    props: [{name: 'player-index', required: true}],
+	    data: function() {
+	        return {
+	            motivationalMessage: messages[(Math.random() * messages.length) | 0]
+	        }
 	    }
 	});
 
 /***/ },
-/* 64 */
+/* 59 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(65);
+	var content = __webpack_require__(60);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(67)(content, {});
+	var update = __webpack_require__(62)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss");
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./player_turn.scss", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./player_turn.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -11502,21 +11468,21 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 65 */
+/* 60 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(66)();
+	exports = module.exports = __webpack_require__(61)();
 	// imports
 
 
 	// module
-	exports.push([module.id, ".score-board-container {\n  display: flex;\n  flex-direction: column;\n  color: white;\n  background: #ff8d13;\n  border-radius: 20px; }\n  .score-board-container .score-board {\n    display: flex;\n    flex-direction: row;\n    justify-content: space-around;\n    margin: 1em; }\n", ""]);
+	exports.push([module.id, ".component-player-turn {\n  color: white; }\n", ""]);
 
 	// exports
 
 
 /***/ },
-/* 66 */
+/* 61 */
 /***/ function(module, exports) {
 
 	/*
@@ -11572,7 +11538,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 67 */
+/* 62 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -11824,10 +11790,104 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 68 */
+/* 63 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"score-board-container\">\r\n    <template v-for=\"player in gameManager.players\">\r\n\r\n        <div class=\"score-board\">\r\n            <div>Player {{($index + 1)}}</div>\r\n\r\n            <div>{{player.scoreKeeper.frames[0].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[1].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[2].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[3].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[4].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[5].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[6].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[7].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[8].scoreString}}</div>\r\n            <div>{{player.scoreKeeper.frames[9].scoreString}}</div>\r\n\r\n            <div>= {{player.scoreKeeper.totalScoreString}}</div>\r\n        </div>\r\n\r\n    </template>\r\n</div>\r\n";
+	module.exports = "<div class=\"component-player-turn\">\r\n    <h1>Player {{(playerIndex + 1)}}, {{motivationalMessage}}</h1>\r\n</div>";
+
+/***/ },
+/* 64 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Vue = __webpack_require__(38);
+	__webpack_require__(65);
+
+	module.exports = Vue.component('component-score-board', {
+	    template: __webpack_require__(67),
+	    props: [{name: 'game-manager', required: true}],
+	    data: function () {
+	        return {
+	            scoreKeepers: [],
+	            scoreStrings: []
+	        }
+	    },
+
+	    ready() {
+	        const players = this.gameManager.turnManager.players;
+	        const scoreStrings = [];
+	        for(var i = 0; i < players.length; i++) {
+	            const scores = [];
+	            const scoreKeeper = players[i].scoreKeeper;
+	            this.scoreKeepers.push(scoreKeeper);
+	            for(var j = 0; j < 10; j++) {
+	                scores.push(this.getScoreString(scoreKeeper.frames[j]));
+	            }
+	            scoreStrings.push(scores);
+	        }
+	        this.$set("scoreStrings", scoreStrings);
+	    },
+
+	    methods: {
+	        getScoreString(frame) {
+	            if(frame.totalRolls === 0) {
+	                return "";
+	            }
+	            if(frame.isStrike) {
+	                return "X";
+	            }
+	            if(frame.isSpare) {
+	                return "/";
+	            }
+	            return frame.score;
+	        }
+	    }
+	});
+
+/***/ },
+/* 65 */
+/***/ function(module, exports, __webpack_require__) {
+
+	// style-loader: Adds some css to the DOM by adding a <style> tag
+
+	// load the styles
+	var content = __webpack_require__(66);
+	if(typeof content === 'string') content = [[module.id, content, '']];
+	// add the styles to the DOM
+	var update = __webpack_require__(62)(content, {});
+	if(content.locals) module.exports = content.locals;
+	// Hot Module Replacement
+	if(false) {
+		// When the styles change, update the <style> tags
+		if(!content.locals) {
+			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss", function() {
+				var newContent = require("!!./../../../node_modules/css-loader/index.js!./../../../node_modules/sass-loader/index.js!./score_board.scss");
+				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+				update(newContent);
+			});
+		}
+		// When the module is disposed, remove the <style> tags
+		module.hot.dispose(function() { update(); });
+	}
+
+/***/ },
+/* 66 */
+/***/ function(module, exports, __webpack_require__) {
+
+	exports = module.exports = __webpack_require__(61)();
+	// imports
+
+
+	// module
+	exports.push([module.id, ".score-board-container {\n  display: flex;\n  flex-direction: column;\n  color: white;\n  background: #ff8d13;\n  border-radius: 20px;\n  padding: 1em;\n  margin-top: 8em;\n  text-align: center; }\n  .score-board-container table {\n    border-collapse: collapse; }\n  .score-board-container th {\n    padding: 0.5em; }\n  .score-board-container td {\n    padding: 0.25em;\n    border: 1px solid white; }\n  .score-board-container .score-board {\n    display: flex;\n    flex-direction: row;\n    justify-content: space-around;\n    margin: 1em; }\n", ""]);
+
+	// exports
+
+
+/***/ },
+/* 67 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"score-board-container\">\r\n    <h1>Scoreboard</h1>\r\n    <table>\r\n        <thead>\r\n        <tr>\r\n            <th>Player</th>\r\n            <th>Frame 1</th>\r\n            <th>Frame 2</th>\r\n            <th>Frame 3</th>\r\n            <th>Frame 4</th>\r\n            <th>Frame 5</th>\r\n            <th>Frame 6</th>\r\n            <th>Frame 7</th>\r\n            <th>Frame 8</th>\r\n            <th>Frame 9</th>\r\n            <th>Frame 10</th>\r\n            <th>Total</th>\r\n        </tr>\r\n        </thead>\r\n        <tbody>\r\n        <template v-for=\"scores in scoreStrings\">\r\n            <tr>\r\n                <td>{{($index + 1)}}</td>\r\n                <td>{{scores[0]}}</td>\r\n                <td>{{scores[1]}}</td>\r\n                <td>{{scores[2]}}</td>\r\n                <td>{{scores[3]}}</td>\r\n                <td>{{scores[4]}}</td>\r\n                <td>{{scores[5]}}</td>\r\n                <td>{{scores[6]}}</td>\r\n                <td>{{scores[7]}}</td>\r\n                <td>{{scores[8]}}</td>\r\n                <td>{{scores[9]}}</td>\r\n                <td>300</td>\r\n            </tr>\r\n        </template>\r\n        </tbody>\r\n    </table>\r\n</div>\r\n";
 
 /***/ }
 ]);

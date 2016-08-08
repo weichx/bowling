@@ -24,6 +24,7 @@ ResourceManager.readyPromise.then(() => {
 
     var ball = new SceneObject(gameManager.root, "ball");
     ball.model = ResourceManager.getModel("sphere.json");
+    ball.scale = vec3.fromValues(0.5, 0.5, 0.5);
     ball.material = ResourceManager.getMaterial("ball.mat");
     ball.rigidBody = new Physics.Body({
         mass: 5, // kg

@@ -1,7 +1,7 @@
 const Physics = require("cannon");
 
 module.exports = {
-    GetBallResetPosition: function() { return new Physics.Vec3(0, 1.5, 12) },
+    GetBallResetPosition: function() { return new Physics.Vec3(0, 0.5, 12) },
     PinPositions: [
         [-0.4, -0.5, -10.5],
         [0.4, -0.5, -10.5],

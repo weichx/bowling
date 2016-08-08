@@ -2,8 +2,9 @@ const GLUtil = require("./gl_util");
 const SceneObject = require('./scene_object');
 const SplashScene = require("./scenes/splash_scene");
 const GameStartScene = require("./scenes/game_start");
-const GamePlayScene = require("./scenes/game_play");
 const GameSummaryScene = require("./scenes/game_summary");
+const PlayerTurnScene = require("./scenes/player_turn");
+const FrameScene = require("./scenes/frame_scene");
 const TurnManager = require("./turn_manager");
 const SceneManager = require("./scene_manager");
 const Player = require("./player");
@@ -21,6 +22,8 @@ class GameManager extends SceneManager {
     constructor() {
         super();
         this.showScoreboard = false;
+        this.showSplashScreen = true;
+        this.showPlayerTurnMessage = false;
         this.paused = false;
         this.camera = new Camera();
         this.root = new SceneObject();
@@ -36,9 +39,6 @@ class GameManager extends SceneManager {
 
         this.sceneFlow = [
             new SplashScene(this),
-            new GameStartScene(this),
-            new GamePlayScene(this),
-            new GameSummaryScene(this)
         ];
 
         const gl = GLUtil.getGl();
@@ -48,11 +48,25 @@ class GameManager extends SceneManager {
     }
 
     start(playerCount) {
+
+        this.sceneFlow.push(new GameStartScene(this));
+
+        for(var i = 0; i < 10; i++) {
+            this.sceneFlow.push(new FrameScene(this));
+            for(var j = 0; j < playerCount; j++) {
+                this.sceneFlow.push(new PlayerTurnScene(this));
+            }
+        }
+
+        this.sceneFlow.push(new GameSummaryScene(this));
+
         var playerList = [];
-        for(var i = 0; i < playerCount; i++) {
+        for(i = 0; i < playerCount; i++) {
             playerList.push(new Player("Player " + (i + 1)));
         }
         this.turnManager = new TurnManager(playerList);
+        this.turnManager.startGame();
+        this.beginScene();
     }
 
     tick(timestamp) {

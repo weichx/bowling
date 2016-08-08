@@ -1,39 +1,18 @@
-const SceneManager = require("../scene_manager");
-const PlayerTurnScene = require("./player_turn");
+const GameScene = require("./game_scene");
 
-class ShowScoreScene {
+class FrameScene extends GameScene {
 
     constructor(gameManager) {
-        this.gameManager = gameManager;
+        super("FrameScene", gameManager);
     }
 
     enter() {
-        this.gameManager.showScore = true;
+        this.gameManager.showScoreboard = true;
         setTimeout(() => {
-            this.gameManager.showScore = false;
-            //todo end scene
-        }, 3000);
+            this.gameManager.showScoreboard = false;
+            this.gameManager.endScene();
+        }, 1500);
     }
-}
-
-class FrameScene extends SceneManager {
-
-    constructor(parentSceneManager, gameManager) {
-        super();
-        this.name = "FrameScene";
-        this.parentSceneManager = parentSceneManager;
-        this.gameManager = gameManager;
-    }
-
-    enter() {
-        var playerCount = this.gameManager.turnManager.players.length;
-        for(var i = 0; i < playerCount; i++) {
-            this.sceneFlow.push(new PlayerTurnScene(this));
-        }
-        this.sceneFlow.push(new ShowScoreScene());
-        this.beginScene();
-    }
-
 }
 
 module.exports = FrameScene;

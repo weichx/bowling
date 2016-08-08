@@ -1,22 +1,39 @@
 <div class="score-board-container">
-    <template v-for="player in gameManager.players">
-
-        <div class="score-board">
-            <div>Player {{($index + 1)}}</div>
-
-            <div>{{player.scoreKeeper.frames[0].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[1].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[2].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[3].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[4].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[5].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[6].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[7].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[8].scoreString}}</div>
-            <div>{{player.scoreKeeper.frames[9].scoreString}}</div>
-
-            <div>= {{player.scoreKeeper.totalScoreString}}</div>
-        </div>
-
-    </template>
+    <h1>Scoreboard</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Player</th>
+            <th>Frame 1</th>
+            <th>Frame 2</th>
+            <th>Frame 3</th>
+            <th>Frame 4</th>
+            <th>Frame 5</th>
+            <th>Frame 6</th>
+            <th>Frame 7</th>
+            <th>Frame 8</th>
+            <th>Frame 9</th>
+            <th>Frame 10</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <template v-for="scores in scoreStrings">
+            <tr>
+                <td>{{($index + 1)}}</td>
+                <td>{{scores[0]}}</td>
+                <td>{{scores[1]}}</td>
+                <td>{{scores[2]}}</td>
+                <td>{{scores[3]}}</td>
+                <td>{{scores[4]}}</td>
+                <td>{{scores[5]}}</td>
+                <td>{{scores[6]}}</td>
+                <td>{{scores[7]}}</td>
+                <td>{{scores[8]}}</td>
+                <td>{{scores[9]}}</td>
+                <td>300</td>
+            </tr>
+        </template>
+        </tbody>
+    </table>
 </div>
