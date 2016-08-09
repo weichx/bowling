@@ -1,3 +1,4 @@
+//a class for orchestrating the turn flow between all players
 const GameEvent = require("./e_game_event");
 const EventEmitter = require("./event_emitter");
 
@@ -11,6 +12,7 @@ class TurnManager extends EventEmitter {
         this.totalFrames = 10;
     }
 
+    //starts a game and informing all scoreKeepers about the new game
     startGame(frameCount) {
         this.totalFrames = frameCount || 10;
         this.currentPlayerIdx = 0;
@@ -21,17 +23,20 @@ class TurnManager extends EventEmitter {
         this.beginFrame();
     }
 
+    //start a frame by increasing frame index and starting the current players turn
     beginFrame() {
         this.currentFrameNumber++;
         this.emit(GameEvent.BeginFrame, this.currentFrameNumber);
         this.beginTurn();
     }
 
+    //start a new frame for the current player
     beginTurn() {
         this.emit(GameEvent.BeginTurn, this.currentPlayer, this.currentFrameNumber);
         this.currentPlayer.scoreKeeper.beginNewFrame();
     }
 
+    //score a roll
     recordScore(pins) {
         //dont record points if the game is over
         if(this.isGameOver) return true;
@@ -66,6 +71,7 @@ class TurnManager extends EventEmitter {
         }
     }
 
+    //the game is over when all players have had 10 frames and are all done rolling
     get isGameOver() {
         return this.currentFrameNumber >= this.totalFrames
             && this.players.every(function (player) {

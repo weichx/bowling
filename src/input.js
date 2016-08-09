@@ -1,3 +1,4 @@
+//basic class for per-frame mouse handling
 const MouseButton = require("./e_mouse_button");
 
 const MinDragRadius = 8;

@@ -1,3 +1,6 @@
+//core class for the game
+//holds scene references, determines scene flow
+//owns physics and camera
 const GLUtil = require("./gl_util");
 const Util = require("./util");
 const SceneObject = require('./scene_object');
@@ -26,25 +29,30 @@ class GameManager extends SceneManager {
         this.showPlayerTurnMessage = false;
         this.paused = false;
         this.camera = new Camera();
-        this.root = new SceneObject();
+        this.root = new SceneObject();  //root scene object
         this.turnManager = null;
         this.input = new Input();
         this.physics = new Physics.World();
         this.physics.solver.iterations = 10;
-        this.physics.gravity.set(0, -30, 0);
+        this.physics.gravity.set(0, -30, 0); //heavy gravity because the pins float otherwise, didnt have time to find out why
+        //we only have a few objects so phyiscis can take some shortcuts on broadphase detection
         this.physics.broadphase = new Physics.NaiveBroadphase();
         this.boundTick = (timestamp) => this.tick(timestamp);
 
+        //array of scenes that is traversed linearly
         this.sceneFlow = [
             new SplashScene(this),
         ];
 
+        //init gl constants
         const gl = GLUtil.getGl();
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
         gl.clearColor(0.2, 0.2, 0.2, 1.0);
         this.tick(0);
     }
 
+    //begins the game by pushing a bunch of scenes onto the list
+    //based on player count
     start(playerCount) {
 
         this.sceneFlow.push(new GameStartScene(this));
@@ -62,11 +70,13 @@ class GameManager extends SceneManager {
         for(i = 0; i < playerCount; i++) {
             playerList.push(new Player("Player " + (i + 1)));
         }
+        //create and init the turn manager
         this.turnManager = new TurnManager(playerList);
         this.turnManager.startGame();
         this.beginScene();
     }
 
+    //the update fn, updates time, gathers input, updates physics and draws things
     tick(timestamp) {
         Time.update(timestamp);
         requestAnimationFrame(this.boundTick);
@@ -78,6 +88,7 @@ class GameManager extends SceneManager {
         this.render();
     }
 
+    //draw the scene
     render() {
         const gl = GLUtil.getGl();
         this.checkForResize(gl);
@@ -85,11 +96,14 @@ class GameManager extends SceneManager {
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE); //todo -- material dependent
 
+        //need to invert the camera matrix before sending it through
         var inv = this.camera.getMatrix();
         inv = Util.invertMatrix4x4(inv);
         this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
     }
 
+    //make sure the window size didnt change
+    //if it did, resize it to full screen
     checkForResize(gl) {
 
         const windowWidth = window.innerWidth;

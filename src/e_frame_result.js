@@ -1,3 +1,4 @@
+//enum for assessing the result of a frame
 module.exports = {
     Pending: 1 << 0,
     Strike: 1 << 1,

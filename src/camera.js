@@ -2,6 +2,7 @@ const GLUtil = require("./gl_util");
 const Util = require("./util");
 const SceneObject = require("./scene_object");
 
+//a super basic static camera implementation
 class Camera extends SceneObject {
 
     constructor(parent) {

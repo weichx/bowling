@@ -16,11 +16,10 @@ webpackJsonp([0],[
 	__webpack_require__(27);
 	__webpack_require__(32);
 	__webpack_require__(31);
-	__webpack_require__(42);
 	__webpack_require__(22);
 	__webpack_require__(30);
 	__webpack_require__(21);
-	__webpack_require__(6);
+	__webpack_require__(5);
 	__webpack_require__(19);
 	__webpack_require__(15);
 	__webpack_require__(16);
@@ -31,11 +30,11 @@ webpackJsonp([0],[
 	__webpack_require__(23);
 	__webpack_require__(14);
 	__webpack_require__(20);
+	__webpack_require__(42);
 	__webpack_require__(43);
 	__webpack_require__(44);
-	__webpack_require__(45);
-	__webpack_require__(51);
-	__webpack_require__(55);
+	__webpack_require__(50);
+	__webpack_require__(54);
 	__webpack_require__(4);
 	module.exports = __webpack_require__(27);
 
@@ -46,6 +45,7 @@ webpackJsonp([0],[
 
 	const GLUtil = __webpack_require__(2);
 
+	//a convienence class for wrapping webgl buffers
 	class GLBuffer {
 
 	    constructor() {
@@ -63,6 +63,7 @@ webpackJsonp([0],[
 /* 2 */
 /***/ function(module, exports) {
 
+	//Utility class for working with webgl constructs
 	var ShaderType = {
 	    Vertex: "Vertex",
 	    Fragment: "Fragment"
@@ -81,6 +82,7 @@ webpackJsonp([0],[
 	        return canvas;
 	    }
 
+	    //setup the canvas and get the rending context
 	    static initGL(canvasId) {
 	        try {
 	            canvas = document.getElementById(canvasId);
@@ -91,10 +93,11 @@ webpackJsonp([0],[
 	            console.error(e);
 	        }
 	        if (!gl) {
-	            alert("Could not initialise WebGL, try a different browser dude!");
+	            alert("Could not initialize WebGL, try a different browser dude!");
 	        }
 	    }
 
+	    //make a webgl shader from source
 	    static createShaderProgram(vertexSource, fragmentSource) {
 	        var vertexShader = GLUtil.compileShader(ShaderType.Vertex, vertexSource);
 	        var fragmentShader = GLUtil.compileShader(ShaderType.Fragment, fragmentSource);
@@ -108,6 +111,7 @@ webpackJsonp([0],[
 	        return shaderProgram;
 	    }
 
+	    //compile a shader
 	    static compileShader(shaderType, shaderSource) {
 	        var shader = null;
 	        if (shaderType === ShaderType.Fragment) {
@@ -135,6 +139,7 @@ webpackJsonp([0],[
 	        });
 	    }
 
+	    //setup textures, flip the y values, generate mip maps, and setup texture wrapping and filtering
 	    static setupTexture(image) {
 	        const gl = GLUtil.getGl();
 	        var tex = gl.createTexture();
@@ -159,8 +164,9 @@ webpackJsonp([0],[
 
 	const GLUtil = __webpack_require__(2);
 	const Util = __webpack_require__(4);
-	const SceneObject = __webpack_require__(6);
+	const SceneObject = __webpack_require__(5);
 
+	//a super basic static camera implementation
 	class Camera extends SceneObject {
 
 	    constructor(parent) {
@@ -187,11 +193,16 @@ webpackJsonp([0],[
 
 /***/ },
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
+	//a math utility class. Some matrix functions borrowed from gl-matrix
+	//so that I could drop that dependency. I was unhappy with having 2
+	//vector3 representations (one from cannon, one from gl-matrix) so
+	//i removed gl-matrix and converted all vectors to cannon's.
+	//I still needed some matrix functions not provided by Cannon
+	//so i extracted the relevant ones here
 	const RadConstant = Math.PI / 180;
 	const DegreeConstant = 180 / Math.PI;
-	const Vec3 = __webpack_require__(5).Vec3;
 
 	module.exports = {
 
@@ -388,14 +399,17 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 5 */,
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//the core class for all 'things' in the scene
+	//its intended to be a heirarchy of items with
+	//their parent transforms being taken into account
+	//so all spacial calculations can be done locally
 	const GLUtil = __webpack_require__(2);
 	const Util = __webpack_require__(4);
-	const Vec3 = __webpack_require__(5).Vec3;
-	const Quaternion = __webpack_require__(5).Quaternion;
+	const Vec3 = __webpack_require__(6).Vec3;
+	const Quaternion = __webpack_require__(6).Quaternion;
 
 	class SceneObject {
 
@@ -405,17 +419,10 @@ webpackJsonp([0],[
 	        this.model = null;
 	        this.material = null;
 	        this.rigidBody = null;
-	        this.components = [];
 	        this.children = [];
 	        this.position = new Vec3();
 	        this.rotation = new Quaternion();
 	        this.scale = new Vec3(1, 1, 1);
-	    }
-
-	    initialize() {
-	        for (var i = 0; i < this.components.length; i++) {
-	            this.components[i].initialize();
-	        }
 	    }
 
 	    findChild(tag) {
@@ -434,6 +441,7 @@ webpackJsonp([0],[
 	    }
 
 	    render(parentWorldMatrix, viewMatrix, projectionMatrix) {
+	        //combine matrices to get the world-view-projection for this model
 	        const wvp = Util.createMatrix4x4();
 	        Util.multiplyMatrix(wvp, parentWorldMatrix, viewMatrix);
 	        Util.multiplyMatrix(wvp, wvp, projectionMatrix);
@@ -441,11 +449,13 @@ webpackJsonp([0],[
 	        this.renderSelf(parentWorldMatrix, viewMatrix, projectionMatrix);
 
 	        var worldMatrix = this.getMatrix();
+	        //render all the children providing them with our world matrix
 	        for (var i = 0; i < this.children.length; i++) {
 	            this.children[i].render(worldMatrix, viewMatrix, projectionMatrix);
 	        }
 	    }
 
+	    //draw yourself, setup all the webgl buffers and textures then issue a draw command
 	    renderSelf(parentWorld, viewMatrix, projectionMatrix) {
 	        if (!this.model) return;
 
@@ -544,15 +554,18 @@ webpackJsonp([0],[
 	module.exports = SceneObject;
 
 /***/ },
+/* 6 */,
 /* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vec3 = __webpack_require__(5).Vec3;
+	const Vec3 = __webpack_require__(6).Vec3;
 
 	module.exports = {
+	    //position of the ball when player is shooting it
 	    GetBallResetPosition: function () {
 	        return new Vec3(0, 0.5, 12)
 	    },
+	    //default pin positions
 	    PinPositions: [
 	        new Vec3(-0.4, 0.5, -10.5),
 	        new Vec3(0.4, 0.5, -10.5),
@@ -571,6 +584,7 @@ webpackJsonp([0],[
 /* 8 */
 /***/ function(module, exports) {
 
+	//enum for assessing the result of a frame
 	module.exports = {
 	    Pending: 1 << 0,
 	    Strike: 1 << 1,
@@ -582,6 +596,8 @@ webpackJsonp([0],[
 /* 9 */
 /***/ function(module, exports) {
 
+	//event for the score keeper, unused currently but
+	//could be used for UI integration
 	module.exports = {
 	    BeginGame: "BeginGame",
 	    BeginTurn: "BeginTurn",
@@ -596,6 +612,7 @@ webpackJsonp([0],[
 /* 10 */
 /***/ function(module, exports) {
 
+	//enum for checking mouse button status
 	const MouseButton = {
 	    None: 0,
 	    Left: 1 << 0,
@@ -613,26 +630,11 @@ webpackJsonp([0],[
 /* 11 */
 /***/ function(module, exports) {
 
+	//a basic event emitter implementation
 	class EventEmitter {
 
 	    constructor() {
 	        this.listeners = {};
-	        this.subscribers = [];
-	    }
-
-	    addEventSubscriber(subscriber) {
-	        if (!subscriber || typeof subscriber !== "object") return null;
-
-	        this.subscribers.push(subscriber);
-	        return () => {
-	            return this.removeEventSubscriber(subscriber);
-	        };
-	    }
-
-	    removeEventSubscriber(subscriber) {
-	        var idx = this.subscribers.indexOf(subscriber);
-	        if (idx !== -1) this.subscribers.splice(idx, 1);
-	        return idx !== -1;
 	    }
 
 	    on(eventName, handler, once) {
@@ -657,12 +659,7 @@ webpackJsonp([0],[
 	                i--;
 	            }
 	        }
-	        for (i = 0; i < this.subscribers.length; i++) {
-	            var handler = this.subscribers[i];
-	            if (typeof handler[eventName] === "function") {
-	                handler[eventName].apply(handler, args);
-	            }
-	        }
+
 	    }
 
 	    remove(eventName, handler) {
@@ -692,9 +689,12 @@ webpackJsonp([0],[
 /* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//core class for the game
+	//holds scene references, determines scene flow
+	//owns physics and camera
 	const GLUtil = __webpack_require__(2);
 	const Util = __webpack_require__(4);
-	const SceneObject = __webpack_require__(6);
+	const SceneObject = __webpack_require__(5);
 	const SplashScene = __webpack_require__(13);
 	const GameStartScene = __webpack_require__(16);
 	const GameSummaryScene = __webpack_require__(17);
@@ -703,7 +703,7 @@ webpackJsonp([0],[
 	const TurnManager = __webpack_require__(20);
 	const SceneManager = __webpack_require__(21);
 	const Player = __webpack_require__(22);
-	const Physics = __webpack_require__(5);
+	const Physics = __webpack_require__(6);
 	const Camera = __webpack_require__(3);
 	const Time = __webpack_require__(14);
 	const Input = __webpack_require__(25);
@@ -720,25 +720,30 @@ webpackJsonp([0],[
 	        this.showPlayerTurnMessage = false;
 	        this.paused = false;
 	        this.camera = new Camera();
-	        this.root = new SceneObject();
+	        this.root = new SceneObject();  //root scene object
 	        this.turnManager = null;
 	        this.input = new Input();
 	        this.physics = new Physics.World();
 	        this.physics.solver.iterations = 10;
-	        this.physics.gravity.set(0, -30, 0);
+	        this.physics.gravity.set(0, -30, 0); //heavy gravity because the pins float otherwise, didnt have time to find out why
+	        //we only have a few objects so phyiscis can take some shortcuts on broadphase detection
 	        this.physics.broadphase = new Physics.NaiveBroadphase();
 	        this.boundTick = (timestamp) => this.tick(timestamp);
 
+	        //array of scenes that is traversed linearly
 	        this.sceneFlow = [
 	            new SplashScene(this),
 	        ];
 
+	        //init gl constants
 	        const gl = GLUtil.getGl();
 	        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 	        gl.clearColor(0.2, 0.2, 0.2, 1.0);
 	        this.tick(0);
 	    }
 
+	    //begins the game by pushing a bunch of scenes onto the list
+	    //based on player count
 	    start(playerCount) {
 
 	        this.sceneFlow.push(new GameStartScene(this));
@@ -756,11 +761,13 @@ webpackJsonp([0],[
 	        for(i = 0; i < playerCount; i++) {
 	            playerList.push(new Player("Player " + (i + 1)));
 	        }
+	        //create and init the turn manager
 	        this.turnManager = new TurnManager(playerList);
 	        this.turnManager.startGame();
 	        this.beginScene();
 	    }
 
+	    //the update fn, updates time, gathers input, updates physics and draws things
 	    tick(timestamp) {
 	        Time.update(timestamp);
 	        requestAnimationFrame(this.boundTick);
@@ -772,6 +779,7 @@ webpackJsonp([0],[
 	        this.render();
 	    }
 
+	    //draw the scene
 	    render() {
 	        const gl = GLUtil.getGl();
 	        this.checkForResize(gl);
@@ -779,11 +787,14 @@ webpackJsonp([0],[
 	        gl.enable(gl.DEPTH_TEST);
 	        gl.enable(gl.CULL_FACE); //todo -- material dependent
 
+	        //need to invert the camera matrix before sending it through
 	        var inv = this.camera.getMatrix();
 	        inv = Util.invertMatrix4x4(inv);
 	        this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
 	    }
 
+	    //make sure the window size didnt change
+	    //if it did, resize it to full screen
 	    checkForResize(gl) {
 
 	        const windowWidth = window.innerWidth;
@@ -819,6 +830,9 @@ webpackJsonp([0],[
 
 	    }
 
+	    //orbit the alley while the splash scene is running
+	    //[removed because I was having issues with getting the rotation right
+	    //and dont have time to fix it
 	    update() {
 	        // const camera = this.sceneManager.camera;
 	        //
@@ -859,6 +873,7 @@ webpackJsonp([0],[
 /* 14 */
 /***/ function(module, exports) {
 
+	//simple class for storing time values
 	module.exports = {
 
 	    totalTime: 0,
@@ -876,6 +891,7 @@ webpackJsonp([0],[
 /* 15 */
 /***/ function(module, exports) {
 
+	//generic base class for all scenes providing the enter/update/exit prototype
 	class GameScene {
 
 	    constructor(name, gameManager) {
@@ -899,8 +915,9 @@ webpackJsonp([0],[
 
 	const GameScene = __webpack_require__(15);
 	const Time = __webpack_require__(14);
-	const Vec3 = __webpack_require__(5).Vec3;
+	const Vec3 = __webpack_require__(6).Vec3;
 
+	//this shows after player selection and is mostly here for flair
 	class GameStartScene extends GameScene {
 
 	    constructor(gameManager) {
@@ -910,10 +927,12 @@ webpackJsonp([0],[
 
 
 	    enter() {
+	        //hide the splashScreen on entry
 	        this.gameManager.showSplashScreen = false;
 	    }
 
 	    update() {
+	        //lerp the camera back behind the ball then exit the scene
 	        const camera = this.gameManager.camera;
 	        camera.position.lerp(this.destPoint, Time.deltaTime * 5, camera.position);
 	        if (camera.position.almostEquals(this.destPoint)) {
@@ -948,9 +967,9 @@ webpackJsonp([0],[
 	const GameScene = __webpack_require__(15);
 	const Constants = __webpack_require__(7);
 	const MouseButton = __webpack_require__(10);
-	const Vec3 = __webpack_require__(5).Vec3;
+	const Vec3 = __webpack_require__(6).Vec3;
 	const Time = __webpack_require__(14);
-	const Physics = __webpack_require__(5);
+	const Physics = __webpack_require__(6);
 	const PinPositions = __webpack_require__(7).PinPositions;
 
 	var pt1 = new Vec3(2, 0.5, 12);
@@ -958,7 +977,8 @@ webpackJsonp([0],[
 
 	const TurnState = {
 	    RollSelect: 0,
-	    BallRolling: 1
+	    BallRolling: 1,
+	    Setup: 2
 	};
 
 	class PlayerTurnScene extends GameScene {
@@ -974,8 +994,10 @@ webpackJsonp([0],[
 	        this.initRoll();
 	        this.resetPins();
 	        this.gameManager.showPlayerTurnMessage = true;
+	        this.state = TurnState.Setup;
 	        setTimeout(() => {
 	            this.gameManager.showPlayerTurnMessage = false;
+	            this.state = TurnState.RollSelect;
 	        }, 2000);
 	    }
 
@@ -995,10 +1017,12 @@ webpackJsonp([0],[
 	        for(var i = 0; i < pins.length; i++) {
 	            pins[i].rigidBody.position = PinPositions[i].clone();
 	            pins[i].rigidBody.quaternion = new Physics.Quaternion();
-	            pins[i].velocity = new Vec3();
-	            pins[i].angluarVelocity = new Vec3();
-	            pins[i].force = new Vec3();
+	            pins[i].rigidBody.velocity = new Vec3();
+	            pins[i].rigidBody.angluarVelocity = new Vec3();
+	            pins[i].rigidBody.force = new Vec3();
+	            pins[i].rigidBody.torque = new Vec3();
 	            pins[i].isDown = false;
+	            this.gameManager.physics.addBody(pins[i].rigidBody);
 	        }
 	    }
 
@@ -1006,30 +1030,38 @@ webpackJsonp([0],[
 	        const turnManager = this.gameManager.turnManager;
 
 	        switch (this.state) {
+	            case TurnState.Setup:
+	                //nothing to update here
+	                break;
 	            case TurnState.RollSelect:
+	                //move the ball back and forth until player clicks the mouse
 	                this.oscillateBall();
 	                if (this.gameManager.input.getMouseButton(MouseButton.Left)) {
 	                    this.launchBall();
 	                }
 	                break;
 	            case TurnState.BallRolling:
-	                if (this.ball.rigidBody.position.y < -5) {
+	                //wait until the ball flies off the back of the alley
+	                //then assess pin locations for score. the physics engine
+	                //seems to make some pins stick to the bottom of the alley
+	                //which sucks but I didn't have time to investigate
+	                if (this.ball.rigidBody.position.y < -200) { //200 should give the pins enough time to settle
 	                    var score = 0;
 	                    var pins = this.gameManager.root.findChildren("pin");
 	                    for(var i = 0; i < pins.length; i++) {
 	                        var original = PinPositions[i];
-	                        if(!pins[i].isDown && original.distanceSquared(pins[i].rigidBody.position) > 2) {
+	                        //score a pin if it was knocked down
+	                        if(!pins[i].isDown && original.distanceSquared(pins[i].rigidBody.position) > 1.25) {
 	                            score++;
 	                            pins[i].isDown = true;
 	                        }
 	                    }
-	                    var randomPins = Math.random() * 11;
-	                    randomPins = randomPins | 0;
-	                    console.log("got ", score);
-	                    if(turnManager.recordScore(randomPins)) {
+	                    //record the score and end the scene if we're done rolling
+	                    if(turnManager.recordScore(score)) {
 	                        this.gameManager.endScene();
 	                    }
 	                    else {
+	                        //otherwise setup the next role
 	                        this.initRoll();
 	                    }
 	                }
@@ -1037,19 +1069,35 @@ webpackJsonp([0],[
 	        }
 	    }
 
-	    exit() { }
+	    exit() {
+	        //physics is super slow... remove the bodies here to help during transition scenes
+	        var pins = this.gameManager.root.findChildren("pin");
+	        for(var i = 0; i < pins.length; i++) {
+	            this.gameManager.physics.removeBody(pins[i].rigidBody);
+	        }
+	    }
 
+	    //send the ball flying
 	    launchBall() {
+	        //update state so update() works properly
 	        this.state = TurnState.BallRolling;
+	        //re-create the rigidbody because I was having weird physics issues when I re-used the existing one
 	        this.ball.rigidBody = new Physics.Body({
 	            mass: 10, // kg
-	            position: new Vec3(this.ball.position[0], this.ball.position[1], this.ball.position[2]),
+	            position: this.ball.position.clone(),
 	            shape: new Physics.Sphere(0.5)
 	        });
+	        //zero out all force vectors
+	        this.ball.rigidBody.velocity = new Vec3(0, 0, 0);
+	        this.ball.rigidBody.force = new Vec3(0, 0, 0);
+	        this.ball.rigidBody.torque = new Vec3(0, 0, 0);
+	        this.ball.rigidBody.angluarVelocity = new Vec3(0, 0, 0);
 	        this.gameManager.physics.addBody(this.ball.rigidBody);
+	        //send the ball flying by applying an impulse directly behind it
 	        this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -500), new Vec3(0, 0.5, 12.5));
 	    }
 
+	    //move the ball left and right while player is rolling
 	    oscillateBall() {
 	        if (this.oscilationPoint === pt1) {
 	            this.ball.rigidBody.position.x += Time.deltaTime * 2;
@@ -1080,6 +1128,7 @@ webpackJsonp([0],[
 	        super("FrameScene", gameManager);
 	    }
 
+	    //this just shows the score board for 1.5 seconds then moves on to the player turn
 	    enter() {
 	        this.gameManager.showScoreboard = true;
 	        setTimeout(() => {
@@ -1095,6 +1144,7 @@ webpackJsonp([0],[
 /* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//a class for orchestrating the turn flow between all players
 	const GameEvent = __webpack_require__(9);
 	const EventEmitter = __webpack_require__(11);
 
@@ -1108,6 +1158,7 @@ webpackJsonp([0],[
 	        this.totalFrames = 10;
 	    }
 
+	    //starts a game and informing all scoreKeepers about the new game
 	    startGame(frameCount) {
 	        this.totalFrames = frameCount || 10;
 	        this.currentPlayerIdx = 0;
@@ -1118,17 +1169,20 @@ webpackJsonp([0],[
 	        this.beginFrame();
 	    }
 
+	    //start a frame by increasing frame index and starting the current players turn
 	    beginFrame() {
 	        this.currentFrameNumber++;
 	        this.emit(GameEvent.BeginFrame, this.currentFrameNumber);
 	        this.beginTurn();
 	    }
 
+	    //start a new frame for the current player
 	    beginTurn() {
 	        this.emit(GameEvent.BeginTurn, this.currentPlayer, this.currentFrameNumber);
 	        this.currentPlayer.scoreKeeper.beginNewFrame();
 	    }
 
+	    //score a roll
 	    recordScore(pins) {
 	        //dont record points if the game is over
 	        if(this.isGameOver) return true;
@@ -1163,6 +1217,7 @@ webpackJsonp([0],[
 	        }
 	    }
 
+	    //the game is over when all players have had 10 frames and are all done rolling
 	    get isGameOver() {
 	        return this.currentFrameNumber >= this.totalFrames
 	            && this.players.every(function (player) {
@@ -1181,7 +1236,7 @@ webpackJsonp([0],[
 /* 21 */
 /***/ function(module, exports) {
 
-	
+	//base class for managing a scene flow
 	class SceneManager {
 
 	    constructor() {
@@ -1218,7 +1273,8 @@ webpackJsonp([0],[
 /***/ function(module, exports, __webpack_require__) {
 
 	const ScoreKeeper = __webpack_require__(23);
-
+	//basic player class, originally intended to hold more data
+	//but removed that due to time constraints
 	class Player {
 
 	    constructor(name) {
@@ -1233,6 +1289,7 @@ webpackJsonp([0],[
 /* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//a class to hold scores for all frames
 	const ScoreFrame = __webpack_require__(24);
 
 	class ScoreKeeper {
@@ -1243,6 +1300,7 @@ webpackJsonp([0],[
 	        this.pendingList = [];
 	    }
 
+	    //create n frames when the game begins
 	    beginNewGame(frameCount) {
 	        this.currentFrameIndex = -1;
 	        this.frames = new Array(frameCount);
@@ -1251,16 +1309,23 @@ webpackJsonp([0],[
 	        }
 	    }
 
+	    //at the start of a new frame, that new frame is added to a pending list
 	    beginNewFrame() {
 	        this.currentFrameIndex++;
 	        this.pendingList.push(this.frames[this.currentFrameIndex]);
 	    }
 
+	    //when recording a score, run through all frames in the pending list
+	    //and score `pins` points. This handles strikes and spares in that
+	    //those frames are not removed from the pending list until the
+	    //proper number of rolls have gone by and those subsequent rolls
+	    //have been properly scored.
 	    recordScore(pins) {
 	        for(var i = 0; i < this.pendingList.length; i++) {
 	            const pendingFrame = this.pendingList[i];
 	            pendingFrame.scoreRoll(pins);
 
+	            //if we are done scoring, remove the frame from the list
 	            if(pendingFrame.isScoringCompleted) {
 	                this.pendingList.splice(i--, 1);
 	            }
@@ -1293,18 +1358,21 @@ webpackJsonp([0],[
 /* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//responsible for holding roll and score data for a single game frame for a single player
 	const clamp = __webpack_require__(4).clamp;
 	const FrameResult = __webpack_require__(8);
 
 	class ScoreFrame {
 
 	    constructor(isLastFrame) {
-	        this.isLastFrame = isLastFrame;
-	        this.frameResult = FrameResult.Pending;
+	        this.isLastFrame = isLastFrame; //special case the final frame
+	        this.frameResult = FrameResult.Pending; //start out pending, results are not known yet
 	        this.totalRolls = 0;
 	        this.score = 0;
 	    }
 
+	    //to score a role, add 1 to total rolls, clamp the pin count
+	    //and figure out if we are a strike, spare, or open (< 10 pins in a turn)
 	    scoreRoll(pinCount) {
 	        this.totalRolls++;
 	        this.score += clamp(pinCount, 0, 10);
@@ -1322,11 +1390,16 @@ webpackJsonp([0],[
 	        }
 	    }
 
+	    //scoring for a frame is completed when it is no longer pending
+	    //or a spare or strike happened and 3 total rolls have gone by.
+	    //this can happen on a different turn than the frame we are scoring
+	    //occured on
 	    get isScoringCompleted() {
 	        if(this.isSpare || this.isStrike) return this.totalRolls === 3;
 	        return !this.isPending;
 	    }
 
+	    //rolling is completed when we are no longer pending or reached our target role count
 	    get isRollingCompleted() {
 	        if(this.isLastFrame) {
 	            var targetRolls = (this.isStrike || this.isSpare) ? 3 : 2;
@@ -1361,6 +1434,7 @@ webpackJsonp([0],[
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//basic class for per-frame mouse handling
 	const MouseButton = __webpack_require__(10);
 
 	const MinDragRadius = 8;
@@ -1436,6 +1510,7 @@ webpackJsonp([0],[
 /* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//first things first, boot up our rendering context
 	 __webpack_require__(2).initGL("render-surface");
 
 
@@ -1443,16 +1518,18 @@ webpackJsonp([0],[
 /* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//this is the entry point, make sure our resources are loaded
+	//then create the scene objects and game manager
 	const Vue = __webpack_require__(28);
 	const ResourceManager = __webpack_require__(30);
 	const GameManager = __webpack_require__(12);
-	const SceneObject = __webpack_require__(6);
-	const Physics = __webpack_require__(5);
+	const SceneObject = __webpack_require__(5);
+	const Physics = __webpack_require__(6);
 	const Constants = __webpack_require__(7);
 	const PinPositions = Constants.PinPositions;
 	const GetBallResetPosition = Constants.GetBallResetPosition;
-	const Vec3 = __webpack_require__(5).Vec3;
-	const Quaternion = __webpack_require__(5).Quaternion;
+	const Vec3 = __webpack_require__(6).Vec3;
+	const Quaternion = __webpack_require__(6).Quaternion;
 
 	ResourceManager.readyPromise.then(() => {
 
@@ -1501,11 +1578,11 @@ webpackJsonp([0],[
 	        shape.transformAllPoints(translation, quat);
 	        pin.rigidBody.addShape(shape);
 	        pin.isPin = true;
-
-	        gameManager.physics.addBody(pin.rigidBody);
+	        //dont add pin bodies here, player turn scene handles that for performance reasons
+	        // gameManager.physics.addBody(pin.rigidBody);
 	    }
 
-
+	    //this is the UI root element
 	    new Vue({
 	        el: "#app-root",
 	        data: function () {
@@ -1521,6 +1598,8 @@ webpackJsonp([0],[
 /* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//one stop shop for resource loading.
+	//handles textures, models, shaders, and materials
 	const GLUtil = __webpack_require__(2);
 	const Model = __webpack_require__(31);
 	const Material = __webpack_require__(32);
@@ -1561,6 +1640,8 @@ webpackJsonp([0],[
 	        }));
 	    }
 
+	    //parse out which textures the material needs and make sure we setup a callback to load them
+	    //when they are in the cache
 	    setMaterial(id, materialSrc) {
 	        var material = new Material(this.getShader("default"));
 	         for(var i = 0; i < materialSrc.textures.length; i++) {
@@ -1594,6 +1675,7 @@ webpackJsonp([0],[
 
 	}
 
+	//resource manifest, would have liked to handle this a little differently but this will do for now
 	var manager = new ResourceManager();
 	manager.setShader("default", __webpack_require__(33), __webpack_require__(34));
 	manager.setModel("cube.json", __webpack_require__(35));
@@ -1612,6 +1694,9 @@ webpackJsonp([0],[
 /* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//basic helper class for defining a model
+	//sets up webgl buffers and stuffs data into them
+	//while tracking itemSize and count
 	const GLUtil = __webpack_require__(2);
 	const GLBuffer = __webpack_require__(1);
 
@@ -1634,12 +1719,12 @@ webpackJsonp([0],[
 	        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.glBuffer);
 	        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 	        this.vertexBuffer.itemSize = 3;
-	        this.vertexBuffer.numItems = vertices.length;
+	        this.vertexBuffer.itemCount = vertices.length;
 
 	        gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer.glBuffer);
 	        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 	        this.normalBuffer.itemSize = 3;
-	        this.normalBuffer.numItems = normals.length;
+	        this.normalBuffer.itemCount = normals.length;
 
 	        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer.glBuffer);
 	        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);
@@ -1662,6 +1747,9 @@ webpackJsonp([0],[
 /* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
+	//a helper class for managing pointers into the shader variables
+	//I wanted this to also handle things like lighting, texturing,
+	//and back face culling but didnt have time
 	const GLUtil = __webpack_require__(2);
 
 	class Material {
@@ -11368,44 +11456,27 @@ webpackJsonp([0],[
 
 /***/ },
 /* 42 */
-/***/ function(module, exports) {
-
-	class PlayerStats {
-
-	    constructor() {
-	        this.gamesPlayed = 0;
-	        this.gamesWon = 0;
-	        this.totalSpares = 0;
-	        this.totalStrikes = 0;
-	        this.highScore = 0;
-	        this.totalScore = 0;
-	    }
-	}
-
-	module.exports = PlayerStats;
-
-/***/ },
-/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const Vue = __webpack_require__(28);
 
+	//UI for the start of a frame, basically just shows which frame we are on
 	Vue.component("component-frame-start", {
-	    template: __webpack_require__(43)
+	    template: __webpack_require__(42)
 	});
 
 /***/ },
-/* 44 */
+/* 43 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 45 */
+/* 44 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const Vue = __webpack_require__(28);
-
+	//show a random message when the player's turn starts
 	const messages = [
 	    "time to shine!",
 	    "ready to roll!",
@@ -11415,10 +11486,10 @@ webpackJsonp([0],[
 	    "Get ready for the pin-apocalypse!"
 	];
 
-	__webpack_require__(46);
+	__webpack_require__(45);
 
 	Vue.component("component-player-turn", {
-	    template: __webpack_require__(50),
+	    template: __webpack_require__(49),
 	    props: [{name: 'player-index', required: true}],
 	    data: function() {
 	        return {
@@ -11428,16 +11499,16 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 46 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(47);
+	var content = __webpack_require__(46);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(49)(content, {});
+	var update = __webpack_require__(48)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11454,10 +11525,10 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 47 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(48)();
+	exports = module.exports = __webpack_require__(47)();
 	// imports
 
 
@@ -11468,7 +11539,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 48 */
+/* 47 */
 /***/ function(module, exports) {
 
 	/*
@@ -11524,7 +11595,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 49 */
+/* 48 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -11776,20 +11847,20 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 50 */
+/* 49 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"component-player-turn\">\n    <h1>Player {{(playerIndex + 1)}}, {{motivationalMessage}}</h1>\n</div>";
 
 /***/ },
-/* 51 */
+/* 50 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const Vue = __webpack_require__(28);
-	__webpack_require__(52);
+	__webpack_require__(51);
 
 	module.exports = Vue.component('component-score-board', {
-	    template: __webpack_require__(54),
+	    template: __webpack_require__(53),
 	    props: [{name: 'game-manager', required: true}],
 	    data: function () {
 	        return {
@@ -11799,13 +11870,17 @@ webpackJsonp([0],[
 	    },
 
 	    ready() {
+	        //compute the scores when the ui is ready
+	        //this is done here because I dont want to call
+	        //methods in the template to assess the score
+	        //because the UI framework caches some values
 	        const players = this.gameManager.turnManager.players;
 	        const scoreStrings = [];
 	        for(var i = 0; i < players.length; i++) {
 	            const scores = [];
 	            const scoreKeeper = players[i].scoreKeeper;
 	            this.scoreKeepers.push(scoreKeeper);
-	            for(var j = 0; j < 1; j++) {
+	            for(var j = 0; j < 10; j++) {
 	                scores.push(this.getScoreString(scoreKeeper.frames[j]));
 	            }
 	            scores.push(scoreKeeper.totalScore);
@@ -11831,16 +11906,16 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 52 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(53);
+	var content = __webpack_require__(52);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(49)(content, {});
+	var update = __webpack_require__(48)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11857,10 +11932,10 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 53 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(48)();
+	exports = module.exports = __webpack_require__(47)();
 	// imports
 
 
@@ -11871,19 +11946,20 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 54 */
+/* 53 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"score-board-container\">\n    <h1>Scoreboard</h1>\n    <table>\n        <thead>\n        <tr>\n            <th>Player</th>\n            <th>Frame 1</th>\n            <th>Frame 2</th>\n            <th>Frame 3</th>\n            <th>Frame 4</th>\n            <th>Frame 5</th>\n            <th>Frame 6</th>\n            <th>Frame 7</th>\n            <th>Frame 8</th>\n            <th>Frame 9</th>\n            <th>Frame 10</th>\n            <th>Total</th>\n        </tr>\n        </thead>\n        <tbody>\n        <template v-for=\"scores in scoreStrings\">\n            <tr>\n                <td>{{($index + 1)}}</td>\n                <td>{{scores[0]}}</td>\n                <td>{{scores[1]}}</td>\n                <td>{{scores[2]}}</td>\n                <td>{{scores[3]}}</td>\n                <td>{{scores[4]}}</td>\n                <td>{{scores[5]}}</td>\n                <td>{{scores[6]}}</td>\n                <td>{{scores[7]}}</td>\n                <td>{{scores[8]}}</td>\n                <td>{{scores[9]}}</td>\n                <td>{{scores[10]}}</td>\n            </tr>\n        </template>\n        </tbody>\n    </table>\n</div>\n";
 
 /***/ },
-/* 55 */
+/* 54 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const Vue = __webpack_require__(28);
 
+	//this is the opening scene with the splash ui and animation
 	module.exports = Vue.component('component-splash', {
-	    template: __webpack_require__(56),
+	    template: __webpack_require__(55),
 
 	    props: [
 	        {name: 'game-manager',  required: true}
@@ -11891,7 +11967,6 @@ webpackJsonp([0],[
 
 	    data: function () {
 	        return {
-	            currentView: 'component-splash-scene',
 	            showingPlayerSelection: false
 	        }
 	    },
@@ -11903,11 +11978,14 @@ webpackJsonp([0],[
 	        },
 
 	        setPlayerCount(count) {
-
+	            //toggle animations when we select player count
+	            //2 animations on one element makes things weird
+	            //so remove the old one
 	            this.$el.classList.remove('slideInDown');
 	            this.$el.classList.add('slideOutUp');
 
 	            setTimeout(() => {
+	                //after one second, start the game and end scene
 	                this.gameManager.start(count);
 	                this.gameManager.endScene();
 	            }, 1000);
@@ -11918,7 +11996,7 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 56 */
+/* 55 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"component-main slideInDown\">\n\n    <div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">\n\n        <div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">\n\n            <div class=\"splash-screen\">\n                <h1>Bowling With</h1>\n                <img src=\"./textures/babbel-logo.png\"/>\n                <p class=\"pulsate\">Click to get rollin...</p>\n            </div>\n\n        </div>\n\n        <div class=\"flip-back\" v-else>\n            <div class=\"player-selection-panel\">\n                <img src=\"./textures/babbel-logo.png\"/>\n                <p>Select number of players</p>\n                <div class=\"player-selection-grid\">\n\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>\n\n                </div>\n            </div>\n        </div>\n\n    </div>\n\n</div>\n\n\n";

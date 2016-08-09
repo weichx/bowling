@@ -1,4 +1,4 @@
-
+//base class for managing a scene flow
 class SceneManager {
 
     constructor() {

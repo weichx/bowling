@@ -11,7 +11,8 @@ var pt2 = new Vec3(-2, 0.5, 12);
 
 const TurnState = {
     RollSelect: 0,
-    BallRolling: 1
+    BallRolling: 1,
+    Setup: 2
 };
 
 class PlayerTurnScene extends GameScene {
@@ -27,8 +28,10 @@ class PlayerTurnScene extends GameScene {
         this.initRoll();
         this.resetPins();
         this.gameManager.showPlayerTurnMessage = true;
+        this.state = TurnState.Setup;
         setTimeout(() => {
             this.gameManager.showPlayerTurnMessage = false;
+            this.state = TurnState.RollSelect;
         }, 2000);
     }
 
@@ -48,10 +51,12 @@ class PlayerTurnScene extends GameScene {
         for(var i = 0; i < pins.length; i++) {
             pins[i].rigidBody.position = PinPositions[i].clone();
             pins[i].rigidBody.quaternion = new Physics.Quaternion();
-            pins[i].velocity = new Vec3();
-            pins[i].angluarVelocity = new Vec3();
-            pins[i].force = new Vec3();
+            pins[i].rigidBody.velocity = new Vec3();
+            pins[i].rigidBody.angluarVelocity = new Vec3();
+            pins[i].rigidBody.force = new Vec3();
+            pins[i].rigidBody.torque = new Vec3();
             pins[i].isDown = false;
+            this.gameManager.physics.addBody(pins[i].rigidBody);
         }
     }
 
@@ -59,30 +64,38 @@ class PlayerTurnScene extends GameScene {
         const turnManager = this.gameManager.turnManager;
 
         switch (this.state) {
+            case TurnState.Setup:
+                //nothing to update here
+                break;
             case TurnState.RollSelect:
+                //move the ball back and forth until player clicks the mouse
                 this.oscillateBall();
                 if (this.gameManager.input.getMouseButton(MouseButton.Left)) {
                     this.launchBall();
                 }
                 break;
             case TurnState.BallRolling:
-                if (this.ball.rigidBody.position.y < -5) {
+                //wait until the ball flies off the back of the alley
+                //then assess pin locations for score. the physics engine
+                //seems to make some pins stick to the bottom of the alley
+                //which sucks but I didn't have time to investigate
+                if (this.ball.rigidBody.position.y < -200) { //200 should give the pins enough time to settle
                     var score = 0;
                     var pins = this.gameManager.root.findChildren("pin");
                     for(var i = 0; i < pins.length; i++) {
                         var original = PinPositions[i];
-                        if(!pins[i].isDown && original.distanceSquared(pins[i].rigidBody.position) > 2) {
+                        //score a pin if it was knocked down
+                        if(!pins[i].isDown && original.distanceSquared(pins[i].rigidBody.position) > 1.25) {
                             score++;
                             pins[i].isDown = true;
                         }
                     }
-                    var randomPins = Math.random() * 11;
-                    randomPins = randomPins | 0;
-                    console.log("got ", score);
-                    if(turnManager.recordScore(randomPins)) {
+                    //record the score and end the scene if we're done rolling
+                    if(turnManager.recordScore(score)) {
                         this.gameManager.endScene();
                     }
                     else {
+                        //otherwise setup the next role
                         this.initRoll();
                     }
                 }
@@ -90,19 +103,35 @@ class PlayerTurnScene extends GameScene {
         }
     }
 
-    exit() { }
+    exit() {
+        //physics is super slow... remove the bodies here to help during transition scenes
+        var pins = this.gameManager.root.findChildren("pin");
+        for(var i = 0; i < pins.length; i++) {
+            this.gameManager.physics.removeBody(pins[i].rigidBody);
+        }
+    }
 
+    //send the ball flying
     launchBall() {
+        //update state so update() works properly
         this.state = TurnState.BallRolling;
+        //re-create the rigidbody because I was having weird physics issues when I re-used the existing one
         this.ball.rigidBody = new Physics.Body({
             mass: 10, // kg
-            position: new Vec3(this.ball.position[0], this.ball.position[1], this.ball.position[2]),
+            position: this.ball.position.clone(),
             shape: new Physics.Sphere(0.5)
         });
+        //zero out all force vectors
+        this.ball.rigidBody.velocity = new Vec3(0, 0, 0);
+        this.ball.rigidBody.force = new Vec3(0, 0, 0);
+        this.ball.rigidBody.torque = new Vec3(0, 0, 0);
+        this.ball.rigidBody.angluarVelocity = new Vec3(0, 0, 0);
         this.gameManager.physics.addBody(this.ball.rigidBody);
+        //send the ball flying by applying an impulse directly behind it
         this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -500), new Vec3(0, 0.5, 12.5));
     }
 
+    //move the ball left and right while player is rolling
     oscillateBall() {
         if (this.oscilationPoint === pt1) {
             this.ball.rigidBody.position.x += Time.deltaTime * 2;

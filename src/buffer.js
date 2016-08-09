@@ -1,5 +1,6 @@
 const GLUtil = require("./gl_util");
 
+//a convienence class for wrapping webgl buffers
 class GLBuffer {
 
     constructor() {

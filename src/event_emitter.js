@@ -1,23 +1,8 @@
+//a basic event emitter implementation
 class EventEmitter {
 
     constructor() {
         this.listeners = {};
-        this.subscribers = [];
-    }
-
-    addEventSubscriber(subscriber) {
-        if (!subscriber || typeof subscriber !== "object") return null;
-
-        this.subscribers.push(subscriber);
-        return () => {
-            return this.removeEventSubscriber(subscriber);
-        };
-    }
-
-    removeEventSubscriber(subscriber) {
-        var idx = this.subscribers.indexOf(subscriber);
-        if (idx !== -1) this.subscribers.splice(idx, 1);
-        return idx !== -1;
     }
 
     on(eventName, handler, once) {
@@ -42,12 +27,7 @@ class EventEmitter {
                 i--;
             }
         }
-        for (i = 0; i < this.subscribers.length; i++) {
-            var handler = this.subscribers[i];
-            if (typeof handler[eventName] === "function") {
-                handler[eventName].apply(handler, args);
-            }
-        }
+
     }
 
     remove(eventName, handler) {

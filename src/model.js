@@ -1,3 +1,6 @@
+//basic helper class for defining a model
+//sets up webgl buffers and stuffs data into them
+//while tracking itemSize and count
 const GLUtil = require("./gl_util");
 const GLBuffer = require("./buffer");
 
@@ -20,12 +23,12 @@ class Model {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer.glBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         this.vertexBuffer.itemSize = 3;
-        this.vertexBuffer.numItems = vertices.length;
+        this.vertexBuffer.itemCount = vertices.length;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer.glBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
         this.normalBuffer.itemSize = 3;
-        this.normalBuffer.numItems = normals.length;
+        this.normalBuffer.itemCount = normals.length;
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer.glBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvs), gl.STATIC_DRAW);

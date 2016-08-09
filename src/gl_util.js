@@ -1,3 +1,4 @@
+//Utility class for working with webgl constructs
 var ShaderType = {
     Vertex: "Vertex",
     Fragment: "Fragment"
@@ -16,6 +17,7 @@ class GLUtil {
         return canvas;
     }
 
+    //setup the canvas and get the rending context
     static initGL(canvasId) {
         try {
             canvas = document.getElementById(canvasId);
@@ -26,10 +28,11 @@ class GLUtil {
             console.error(e);
         }
         if (!gl) {
-            alert("Could not initialise WebGL, try a different browser dude!");
+            alert("Could not initialize WebGL, try a different browser dude!");
         }
     }
 
+    //make a webgl shader from source
     static createShaderProgram(vertexSource, fragmentSource) {
         var vertexShader = GLUtil.compileShader(ShaderType.Vertex, vertexSource);
         var fragmentShader = GLUtil.compileShader(ShaderType.Fragment, fragmentSource);
@@ -43,6 +46,7 @@ class GLUtil {
         return shaderProgram;
     }
 
+    //compile a shader
     static compileShader(shaderType, shaderSource) {
         var shader = null;
         if (shaderType === ShaderType.Fragment) {
@@ -70,6 +74,7 @@ class GLUtil {
         });
     }
 
+    //setup textures, flip the y values, generate mip maps, and setup texture wrapping and filtering
     static setupTexture(image) {
         const gl = GLUtil.getGl();
         var tex = gl.createTexture();

@@ -12,13 +12,17 @@ module.exports = Vue.component('component-score-board', {
     },
 
     ready() {
+        //compute the scores when the ui is ready
+        //this is done here because I dont want to call
+        //methods in the template to assess the score
+        //because the UI framework caches some values
         const players = this.gameManager.turnManager.players;
         const scoreStrings = [];
         for(var i = 0; i < players.length; i++) {
             const scores = [];
             const scoreKeeper = players[i].scoreKeeper;
             this.scoreKeepers.push(scoreKeeper);
-            for(var j = 0; j < 1; j++) {
+            for(var j = 0; j < 10; j++) {
                 scores.push(this.getScoreString(scoreKeeper.frames[j]));
             }
             scores.push(scoreKeeper.totalScore);

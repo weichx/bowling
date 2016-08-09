@@ -1,3 +1,5 @@
+//one stop shop for resource loading.
+//handles textures, models, shaders, and materials
 const GLUtil = require("./gl_util");
 const Model = require("./model");
 const Material = require("./material");
@@ -38,6 +40,8 @@ class ResourceManager {
         }));
     }
 
+    //parse out which textures the material needs and make sure we setup a callback to load them
+    //when they are in the cache
     setMaterial(id, materialSrc) {
         var material = new Material(this.getShader("default"));
          for(var i = 0; i < materialSrc.textures.length; i++) {
@@ -71,6 +75,7 @@ class ResourceManager {
 
 }
 
+//resource manifest, would have liked to handle this a little differently but this will do for now
 var manager = new ResourceManager();
 manager.setShader("default", require("../shaders/vert.glsl"), require("../shaders/frag.glsl"));
 manager.setModel("cube.json", require("../models/cube.json"));

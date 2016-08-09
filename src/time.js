@@ -1,3 +1,4 @@
+//simple class for storing time values
 module.exports = {
 
     totalTime: 0,

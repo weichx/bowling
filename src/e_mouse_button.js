@@ -1,3 +1,4 @@
+//enum for checking mouse button status
 const MouseButton = {
     None: 0,
     Left: 1 << 0,

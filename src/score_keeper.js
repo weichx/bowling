@@ -1,3 +1,4 @@
+//a class to hold scores for all frames
 const ScoreFrame = require("./score_frame");
 
 class ScoreKeeper {
@@ -8,6 +9,7 @@ class ScoreKeeper {
         this.pendingList = [];
     }
 
+    //create n frames when the game begins
     beginNewGame(frameCount) {
         this.currentFrameIndex = -1;
         this.frames = new Array(frameCount);
@@ -16,16 +18,23 @@ class ScoreKeeper {
         }
     }
 
+    //at the start of a new frame, that new frame is added to a pending list
     beginNewFrame() {
         this.currentFrameIndex++;
         this.pendingList.push(this.frames[this.currentFrameIndex]);
     }
 
+    //when recording a score, run through all frames in the pending list
+    //and score `pins` points. This handles strikes and spares in that
+    //those frames are not removed from the pending list until the
+    //proper number of rolls have gone by and those subsequent rolls
+    //have been properly scored.
     recordScore(pins) {
         for(var i = 0; i < this.pendingList.length; i++) {
             const pendingFrame = this.pendingList[i];
             pendingFrame.scoreRoll(pins);
 
+            //if we are done scoring, remove the frame from the list
             if(pendingFrame.isScoringCompleted) {
                 this.pendingList.splice(i--, 1);
             }

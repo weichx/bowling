@@ -11,6 +11,9 @@ class SplashScene extends GameScene {
 
     }
 
+    //orbit the alley while the splash scene is running
+    //[removed because I was having issues with getting the rotation right
+    //and dont have time to fix it
     update() {
         // const camera = this.sceneManager.camera;
         //

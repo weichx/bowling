@@ -1,3 +1,7 @@
+//the core class for all 'things' in the scene
+//its intended to be a heirarchy of items with
+//their parent transforms being taken into account
+//so all spacial calculations can be done locally
 const GLUtil = require("./gl_util");
 const Util = require("./util");
 const Vec3 = require("cannon").Vec3;
@@ -11,17 +15,10 @@ class SceneObject {
         this.model = null;
         this.material = null;
         this.rigidBody = null;
-        this.components = [];
         this.children = [];
         this.position = new Vec3();
         this.rotation = new Quaternion();
         this.scale = new Vec3(1, 1, 1);
-    }
-
-    initialize() {
-        for (var i = 0; i < this.components.length; i++) {
-            this.components[i].initialize();
-        }
     }
 
     findChild(tag) {
@@ -40,6 +37,7 @@ class SceneObject {
     }
 
     render(parentWorldMatrix, viewMatrix, projectionMatrix) {
+        //combine matrices to get the world-view-projection for this model
         const wvp = Util.createMatrix4x4();
         Util.multiplyMatrix(wvp, parentWorldMatrix, viewMatrix);
         Util.multiplyMatrix(wvp, wvp, projectionMatrix);
@@ -47,11 +45,13 @@ class SceneObject {
         this.renderSelf(parentWorldMatrix, viewMatrix, projectionMatrix);
 
         var worldMatrix = this.getMatrix();
+        //render all the children providing them with our world matrix
         for (var i = 0; i < this.children.length; i++) {
             this.children[i].render(worldMatrix, viewMatrix, projectionMatrix);
         }
     }
 
+    //draw yourself, setup all the webgl buffers and textures then issue a draw command
     renderSelf(parentWorld, viewMatrix, projectionMatrix) {
         if (!this.model) return;
 

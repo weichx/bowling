@@ -1,3 +1,5 @@
+//this is the entry point, make sure our resources are loaded
+//then create the scene objects and game manager
 const Vue = require("vue");
 const ResourceManager = require("./resource_manager");
 const GameManager = require("./game_manager");
@@ -56,11 +58,11 @@ ResourceManager.readyPromise.then(() => {
         shape.transformAllPoints(translation, quat);
         pin.rigidBody.addShape(shape);
         pin.isPin = true;
-
-        gameManager.physics.addBody(pin.rigidBody);
+        //dont add pin bodies here, player turn scene handles that for performance reasons
+        // gameManager.physics.addBody(pin.rigidBody);
     }
 
-
+    //this is the UI root element
     new Vue({
         el: "#app-root",
         data: function () {

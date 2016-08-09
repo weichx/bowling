@@ -1,3 +1,6 @@
+//a helper class for managing pointers into the shader variables
+//I wanted this to also handle things like lighting, texturing,
+//and back face culling but didnt have time
 const GLUtil = require("./gl_util");
 
 class Material {

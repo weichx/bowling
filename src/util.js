@@ -1,6 +1,11 @@
+//a math utility class. Some matrix functions borrowed from gl-matrix
+//so that I could drop that dependency. I was unhappy with having 2
+//vector3 representations (one from cannon, one from gl-matrix) so
+//i removed gl-matrix and converted all vectors to cannon's.
+//I still needed some matrix functions not provided by Cannon
+//so i extracted the relevant ones here
 const RadConstant = Math.PI / 180;
 const DegreeConstant = 180 / Math.PI;
-const Vec3 = require("cannon").Vec3;
 
 module.exports = {
 

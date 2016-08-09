@@ -6,6 +6,7 @@ class FrameScene extends GameScene {
         super("FrameScene", gameManager);
     }
 
+    //this just shows the score board for 1.5 seconds then moves on to the player turn
     enter() {
         this.gameManager.showScoreboard = true;
         setTimeout(() => {

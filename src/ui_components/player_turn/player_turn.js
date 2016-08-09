@@ -1,5 +1,5 @@
 const Vue = require("vue");
-
+//show a random message when the player's turn starts
 const messages = [
     "time to shine!",
     "ready to roll!",
