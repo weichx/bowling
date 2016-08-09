@@ -4,41 +4,40 @@ webpackJsonp([0],[
 
 	__webpack_require__(1);
 	__webpack_require__(3);
+	__webpack_require__(7);
+	__webpack_require__(8);
+	__webpack_require__(9);
+	__webpack_require__(10);
+	__webpack_require__(11);
+	__webpack_require__(12);
+	__webpack_require__(2);
+	__webpack_require__(26);
+	__webpack_require__(25);
+	__webpack_require__(27);
+	__webpack_require__(32);
+	__webpack_require__(31);
+	__webpack_require__(42);
+	__webpack_require__(22);
+	__webpack_require__(30);
+	__webpack_require__(21);
+	__webpack_require__(6);
+	__webpack_require__(19);
 	__webpack_require__(15);
+	__webpack_require__(16);
 	__webpack_require__(17);
 	__webpack_require__(18);
-	__webpack_require__(19);
-	__webpack_require__(20);
-	__webpack_require__(21);
-	__webpack_require__(2);
-	__webpack_require__(36);
-	__webpack_require__(35);
-	__webpack_require__(37);
-	__webpack_require__(42);
-	__webpack_require__(41);
-	__webpack_require__(54);
-	__webpack_require__(32);
-	__webpack_require__(40);
-	__webpack_require__(31);
-	__webpack_require__(14);
-	__webpack_require__(29);
+	__webpack_require__(13);
 	__webpack_require__(24);
-	__webpack_require__(26);
-	__webpack_require__(27);
-	__webpack_require__(28);
-	__webpack_require__(22);
-	__webpack_require__(34);
-	__webpack_require__(33);
-	__webpack_require__(55);
 	__webpack_require__(23);
-	__webpack_require__(30);
-	__webpack_require__(56);
-	__webpack_require__(57);
-	__webpack_require__(58);
-	__webpack_require__(64);
-	__webpack_require__(52);
-	__webpack_require__(25);
-	module.exports = __webpack_require__(37);
+	__webpack_require__(14);
+	__webpack_require__(20);
+	__webpack_require__(43);
+	__webpack_require__(44);
+	__webpack_require__(45);
+	__webpack_require__(51);
+	__webpack_require__(55);
+	__webpack_require__(4);
+	module.exports = __webpack_require__(27);
 
 
 /***/ },
@@ -49,13 +48,11 @@ webpackJsonp([0],[
 
 	class GLBuffer {
 
-	    constructor(arrayType, fixedArray, itemSize) {
+	    constructor() {
 	        const gl = GLUtil.getGl();
 	        this.glBuffer = gl.createBuffer();
-	        // gl.bindBuffer(arrayType, this.glBuffer);
-	        // gl.bufferData(arrayType, fixedArray, gl.STATIC_DRAW);
-	        this.itemCount = 0;//fixedArray.length;
-	        this.itemSize = 0;//itemSize;
+	        this.itemCount = 0;
+	        this.itemSize = 0;
 	    }
 
 	}
@@ -160,9 +157,9 @@ webpackJsonp([0],[
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const mat4 = __webpack_require__(4).mat4;
 	const GLUtil = __webpack_require__(2);
-	const SceneObject = __webpack_require__(14);
+	const Util = __webpack_require__(4);
+	const SceneObject = __webpack_require__(6);
 
 	class Camera extends SceneObject {
 
@@ -171,13 +168,12 @@ webpackJsonp([0],[
 	        this.fov = 45.0;
 	        this.nearClipPlane = 0.01;
 	        this.farClipPlane = 1000.0;
-	        this.projectionMatrix = mat4.create();
-	        mat4.identity(this.projectionMatrix);
-	        this.setPosition(0, 0.5, -5);
+	        this.projectionMatrix = Util.createMatrix4x4();
+	        this.setPosition(0, 1, 0);
 	    }
 
 	    updatePerspectiveMatrix() {
-	        mat4.perspective(this.projectionMatrix, this.fov, this.aspectRatio, this.nearClipPlane, this.farClipPlane);
+	        Util.perspectiveMatrix(this.projectionMatrix, this.fov, this.aspectRatio, this.nearClipPlane, this.farClipPlane);
 	    }
 
 	    get aspectRatio() {
@@ -190,28 +186,216 @@ webpackJsonp([0],[
 	module.exports = Camera;
 
 /***/ },
-/* 4 */,
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
-/* 9 */,
-/* 10 */,
-/* 11 */,
-/* 12 */,
-/* 13 */,
-/* 14 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const vec3 = __webpack_require__(4).vec3;
-	const quat = __webpack_require__(4).quat;
-	const mat4 = __webpack_require__(4).mat4;
-	const mat3 = __webpack_require__(4).mat3;
-	const GLUtil = __webpack_require__(2);
+	const RadConstant = Math.PI / 180;
+	const DegreeConstant = 180 / Math.PI;
+	const Vec3 = __webpack_require__(5).Vec3;
 
-	const forward = vec3.fromValues(0, 0, 1);
-	const right = vec3.fromValues(1, 0, 0);
-	const up = vec3.fromValues(0, 1, 0);
+	module.exports = {
+
+	    degToRad(degrees) {
+	        return degrees * RadConstant;
+	    },
+
+	    radToDeg(radians) {
+	        return radians * DegreeConstant;
+	    },
+
+	    clamp(input, min, max) {
+	        if (input < min) input = min;
+	        if (input > max) input = max;
+	        return input;
+	    },
+
+	    createMatrix4x4() {
+	        var out = new Float32Array(16);
+	        out[0] = 1;
+	        out[1] = 0;
+	        out[2] = 0;
+	        out[3] = 0;
+	        out[4] = 0;
+	        out[5] = 1;
+	        out[6] = 0;
+	        out[7] = 0;
+	        out[8] = 0;
+	        out[9] = 0;
+	        out[10] = 1;
+	        out[11] = 0;
+	        out[12] = 0;
+	        out[13] = 0;
+	        out[14] = 0;
+	        out[15] = 1;
+	        return out;
+	    },
+
+	    invertMatrix4x4(a) {
+	        var out = this.createMatrix4x4();
+	        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+	            a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+	            a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+	            a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15],
+	            b00 = a00 * a11 - a01 * a10,
+	            b01 = a00 * a12 - a02 * a10,
+	            b02 = a00 * a13 - a03 * a10,
+	            b03 = a01 * a12 - a02 * a11,
+	            b04 = a01 * a13 - a03 * a11,
+	            b05 = a02 * a13 - a03 * a12,
+	            b06 = a20 * a31 - a21 * a30,
+	            b07 = a20 * a32 - a22 * a30,
+	            b08 = a20 * a33 - a23 * a30,
+	            b09 = a21 * a32 - a22 * a31,
+	            b10 = a21 * a33 - a23 * a31,
+	            b11 = a22 * a33 - a23 * a32,
+	            // Calculate the determinant
+	            det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+	        if (!det) {
+	            return null;
+	        }
+	        det = 1.0 / det;
+	        out[0] = (a11 * b11 - a12 * b10 + a13 * b09) * det;
+	        out[1] = (a02 * b10 - a01 * b11 - a03 * b09) * det;
+	        out[2] = (a31 * b05 - a32 * b04 + a33 * b03) * det;
+	        out[3] = (a22 * b04 - a21 * b05 - a23 * b03) * det;
+	        out[4] = (a12 * b08 - a10 * b11 - a13 * b07) * det;
+	        out[5] = (a00 * b11 - a02 * b08 + a03 * b07) * det;
+	        out[6] = (a32 * b02 - a30 * b05 - a33 * b01) * det;
+	        out[7] = (a20 * b05 - a22 * b02 + a23 * b01) * det;
+	        out[8] = (a10 * b10 - a11 * b08 + a13 * b06) * det;
+	        out[9] = (a01 * b08 - a00 * b10 - a03 * b06) * det;
+	        out[10] = (a30 * b04 - a31 * b02 + a33 * b00) * det;
+	        out[11] = (a21 * b02 - a20 * b04 - a23 * b00) * det;
+	        out[12] = (a11 * b07 - a10 * b09 - a12 * b06) * det;
+	        out[13] = (a00 * b09 - a01 * b07 + a02 * b06) * det;
+	        out[14] = (a31 * b01 - a30 * b03 - a32 * b00) * det;
+	        out[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det;
+	        return out;
+	    },
+
+	    matrixFromTRS(q, v, s) {
+	        var x = q.x,
+	            y = q.y,
+	            z = q.z,
+	            w = q.w,
+	            x2 = x + x,
+	            y2 = y + y,
+	            z2 = z + z,
+	            xx = x * x2,
+	            xy = x * y2,
+	            xz = x * z2,
+	            yy = y * y2,
+	            yz = y * z2,
+	            zz = z * z2,
+	            wx = w * x2,
+	            wy = w * y2,
+	            wz = w * z2,
+	            sx = s.x,
+	            sy = s.y,
+	            sz = s.z;
+	        var out = this.createMatrix4x4();
+	        out[0] = (1 - (yy + zz)) * sx;
+	        out[1] = (xy + wz) * sx;
+	        out[2] = (xz - wy) * sx;
+	        out[3] = 0;
+	        out[4] = (xy - wz) * sy;
+	        out[5] = (1 - (xx + zz)) * sy;
+	        out[6] = (yz + wx) * sy;
+	        out[7] = 0;
+	        out[8] = (xz + wy) * sz;
+	        out[9] = (yz - wx) * sz;
+	        out[10] = (1 - (xx + yy)) * sz;
+	        out[11] = 0;
+	        out[12] = v.x;
+	        out[13] = v.y;
+	        out[14] = v.z;
+	        out[15] = 1;
+	        return out;
+	    },
+
+	    perspectiveMatrix(out, fovy, aspect, near, far) {
+	        var f = 1.0 / Math.tan(fovy / 2);
+	        var nf = 1 / (near - far);
+	        out[0] = f / aspect;
+	        out[1] = 0;
+	        out[2] = 0;
+	        out[3] = 0;
+	        out[4] = 0;
+	        out[5] = f;
+	        out[6] = 0;
+	        out[7] = 0;
+	        out[8] = 0;
+	        out[9] = 0;
+	        out[10] = (far + near) * nf;
+	        out[11] = -1;
+	        out[12] = 0;
+	        out[13] = 0;
+	        out[14] = (2 * far * near) * nf;
+	        out[15] = 0;
+	        return out;
+	    },
+
+	    multiplyMatrix(out, a, b) {
+	        var a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3],
+	            a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7],
+	            a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11],
+	            a30 = a[12], a31 = a[13], a32 = a[14], a33 = a[15];
+	        var b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3];
+	        out[0] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+	        out[1] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+	        out[2] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+	        out[3] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+	        b0 = b[4];
+	        b1 = b[5];
+	        b2 = b[6];
+	        b3 = b[7];
+	        out[4] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+	        out[5] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+	        out[6] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+	        out[7] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+	        b0 = b[8];
+	        b1 = b[9];
+	        b2 = b[10];
+	        b3 = b[11];
+	        out[8] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+	        out[9] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+	        out[10] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+	        out[11] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+	        b0 = b[12];
+	        b1 = b[13];
+	        b2 = b[14];
+	        b3 = b[15];
+	        out[12] = b0 * a00 + b1 * a10 + b2 * a20 + b3 * a30;
+	        out[13] = b0 * a01 + b1 * a11 + b2 * a21 + b3 * a31;
+	        out[14] = b0 * a02 + b1 * a12 + b2 * a22 + b3 * a32;
+	        out[15] = b0 * a03 + b1 * a13 + b2 * a23 + b3 * a33;
+	        return out;
+	    },
+
+	    extractRotation(a) {
+	        var out = new Float32Array(9);
+	        out[0] = a[0];
+	        out[1] = a[1];
+	        out[2] = a[2];
+	        out[3] = a[4];
+	        out[4] = a[5];
+	        out[5] = a[6];
+	        out[6] = a[8];
+	        out[7] = a[9];
+	        out[8] = a[10];
+	        return out;
+	    }
+	};
+
+/***/ },
+/* 5 */,
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const GLUtil = __webpack_require__(2);
+	const Util = __webpack_require__(4);
+	const Vec3 = __webpack_require__(5).Vec3;
+	const Quaternion = __webpack_require__(5).Quaternion;
 
 	class SceneObject {
 
@@ -223,11 +407,9 @@ webpackJsonp([0],[
 	        this.rigidBody = null;
 	        this.components = [];
 	        this.children = [];
-	        this.position = vec3.create();
-	        this.rotation = quat.create();
-	        quat.identity(this.rotation);
-	        this.scale = vec3.fromValues(1, 1, 1);
-	        this.__matrix = mat4.create();
+	        this.position = new Vec3();
+	        this.rotation = new Quaternion();
+	        this.scale = new Vec3(1, 1, 1);
 	    }
 
 	    initialize() {
@@ -237,7 +419,7 @@ webpackJsonp([0],[
 	    }
 
 	    findChild(tag) {
-	        for(var i = 0; i < this.children.length; i++) {
+	        for (var i = 0; i < this.children.length; i++) {
 	            if (this.children[i].tag === tag) return this.children[i];
 	        }
 	        return null;
@@ -245,16 +427,16 @@ webpackJsonp([0],[
 
 	    findChildren(tag) {
 	        var retn = [];
-	        for(var i = 0; i < this.children.length; i++) {
+	        for (var i = 0; i < this.children.length; i++) {
 	            if (this.children[i].tag === tag) retn.push(this.children[i]);
 	        }
 	        return retn;
 	    }
 
 	    render(parentWorldMatrix, viewMatrix, projectionMatrix) {
-	        const wvp = mat4.create();
-	        mat4.multiply(wvp, parentWorldMatrix, viewMatrix);
-	        mat4.multiply(wvp, wvp, projectionMatrix);
+	        const wvp = Util.createMatrix4x4();
+	        Util.multiplyMatrix(wvp, parentWorldMatrix, viewMatrix);
+	        Util.multiplyMatrix(wvp, wvp, projectionMatrix);
 
 	        this.renderSelf(parentWorldMatrix, viewMatrix, projectionMatrix);
 
@@ -265,7 +447,7 @@ webpackJsonp([0],[
 	    }
 
 	    renderSelf(parentWorld, viewMatrix, projectionMatrix) {
-	        if(!this.model) return;
+	        if (!this.model) return;
 
 	        const gl = GLUtil.getGl();
 	        const material = this.material;
@@ -276,13 +458,12 @@ webpackJsonp([0],[
 
 	        gl.useProgram(material.program);
 
-	        var mvMatrix = mat4.create();
+	        var mvMatrix = Util.createMatrix4x4();
 	        var world = this.getMatrix();
-	        mat4.multiply(world, world, parentWorld);
-	        mat4.multiply(mvMatrix, viewMatrix, world);
+	        Util.multiplyMatrix(world, world, parentWorld);
+	        Util.multiplyMatrix(mvMatrix, viewMatrix, world);
 
-	        var normalMatrix = mat3.create();
-	        mat3.normalFromMat4(normalMatrix, mvMatrix);
+	        var normalMatrix = Util.extractRotation(mvMatrix);
 	        gl.uniformMatrix3fv(shaderPointers.uNormalMatrix, false, normalMatrix);
 
 	        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.glBuffer);
@@ -303,12 +484,17 @@ webpackJsonp([0],[
 	        gl.uniform2fv(shaderPointers.uTextureTiling, [1, 1]);
 
 	        gl.drawElements(gl.TRIANGLES, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
+
 	    }
 
 	    update() {
-	        if(this.rigidBody && !this.rigidBody.test) {
+	        if (this.rigidBody) {
 	            var v = this.rigidBody.position;
 	            var q = this.rigidBody.quaternion;
+	            if (this.isPin) {
+	                v = {x: v.x, y: v.y - 0.5, z: v.z};
+	            }
+
 	            this.setPosition(v.x, v.y, v.z);
 	            this.setRotation(q.x, q.y, q.z, q.w);
 	        }
@@ -325,21 +511,19 @@ webpackJsonp([0],[
 	    }
 
 	    setScale(x, y, z) {
-	        vec3.set(this.scale, x, y, z);
+	        this.scale.set(x, y, z)
 	    }
 
 	    setRotation(x, y, z, w) {
-	        quat.set(this.rotation, x, y, z, w);
+	        this.rotation.set(x, y, z, w);
 	    }
 
 	    setPosition(x, y, z) {
-	        vec3.set(this.position, x, y, z);
+	        this.position.set(x, y, z);
 	    }
 
 	    getMatrix() {
-	        mat4.identity(this.__matrix);
-	        mat4.fromRotationTranslationScale(this.__matrix, this.rotation, this.position, this.scale);
-	        return this.__matrix;
+	        return Util.matrixFromTRS(this.rotation, this.position, this.scale);
 	    }
 
 	    setParent(parent) {
@@ -355,53 +539,36 @@ webpackJsonp([0],[
 	        }
 	    }
 
-	    getForward() {
-	        var retn = vec3.create();
-	        vec3.transformQuat(retn, forward, this.rotation); //may need to include parent rotation
-	        return retn;
-	    }
-
-	    getRight() {
-	        var retn = vec3.create();
-	        vec3.transformQuat(retn, right, this.rotation);
-	        return retn;
-	    }
-
-	    getUp() {
-	        var retn = vec3.create();
-	        vec3.transformQuat(retn, up, this.rotation);
-	        return retn;
-	    }
-
 	}
 
 	module.exports = SceneObject;
 
 /***/ },
-/* 15 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Physics = __webpack_require__(16);
+	const Vec3 = __webpack_require__(5).Vec3;
 
 	module.exports = {
-	    GetBallResetPosition: function() { return new Physics.Vec3(0, 0.5, 12) },
+	    GetBallResetPosition: function () {
+	        return new Vec3(0, 0.5, 12)
+	    },
 	    PinPositions: [
-	        [-0.4, -0.5, -10.5],
-	        [0.4, -0.5, -10.5],
-	        [1.2, -0.5, -10.5],
-	        [-1.2, -0.5, -10.5],
-	        [0, -0.5, -9.5],
-	        [-0.9, -0.5, -9.5],
-	        [0.9, -0.5, -9.5],
-	        [0.5, -0.5, -8.5],
-	        [-0.5, -0.5, -8.5],
-	        [0, -0.5, -7.5]
+	        new Vec3(-0.4, 0.5, -10.5),
+	        new Vec3(0.4, 0.5, -10.5),
+	        new Vec3(1.2, 0.5, -10.5),
+	        new Vec3(-1.2, 0.5, -10.5),
+	        new Vec3(0, 0.5, -9.5),
+	        new Vec3(-0.9, 0.5, -9.5),
+	        new Vec3(0.9, 0.5, -9.5),
+	        new Vec3(0.5, 0.5, -8.5),
+	        new Vec3(-0.5, 0.5, -8.5),
+	        new Vec3(0, 0.5, -7.5)
 	    ]
 	};
 
 /***/ },
-/* 16 */,
-/* 17 */
+/* 8 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -412,7 +579,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 18 */
+/* 9 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -426,7 +593,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 19 */
+/* 10 */
 /***/ function(module, exports) {
 
 	const MouseButton = {
@@ -443,7 +610,7 @@ webpackJsonp([0],[
 	module.exports = MouseButton;
 
 /***/ },
-/* 20 */
+/* 11 */
 /***/ function(module, exports) {
 
 	class EventEmitter {
@@ -522,26 +689,26 @@ webpackJsonp([0],[
 	module.exports = EventEmitter;
 
 /***/ },
-/* 21 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
-	const SceneObject = __webpack_require__(14);
-	const SplashScene = __webpack_require__(22);
-	const GameStartScene = __webpack_require__(26);
-	const GameSummaryScene = __webpack_require__(27);
-	const PlayerTurnScene = __webpack_require__(28);
-	const FrameScene = __webpack_require__(29);
-	const TurnManager = __webpack_require__(30);
-	const SceneManager = __webpack_require__(31);
-	const Player = __webpack_require__(32);
-	const Physics = __webpack_require__(16);
+	const Util = __webpack_require__(4);
+	const SceneObject = __webpack_require__(6);
+	const SplashScene = __webpack_require__(13);
+	const GameStartScene = __webpack_require__(16);
+	const GameSummaryScene = __webpack_require__(17);
+	const PlayerTurnScene = __webpack_require__(18);
+	const FrameScene = __webpack_require__(19);
+	const TurnManager = __webpack_require__(20);
+	const SceneManager = __webpack_require__(21);
+	const Player = __webpack_require__(22);
+	const Physics = __webpack_require__(5);
 	const Camera = __webpack_require__(3);
-	const Time = __webpack_require__(23);
-	const mat4 = __webpack_require__(4).mat4;
-	const Input = __webpack_require__(35);
+	const Time = __webpack_require__(14);
+	const Input = __webpack_require__(25);
 
-	const IdentityMatrix = mat4.create();
+	const IdentityMatrix = Util.createMatrix4x4();
 	const PhysicsFixedRate = 1.0 / 60.0;
 
 	class GameManager extends SceneManager {
@@ -557,11 +724,9 @@ webpackJsonp([0],[
 	        this.turnManager = null;
 	        this.input = new Input();
 	        this.physics = new Physics.World();
-	        this.physics.solver.iterations = 5;
-	        this.physics.gravity.set(0, -9.82, 0);
+	        this.physics.solver.iterations = 10;
+	        this.physics.gravity.set(0, -30, 0);
 	        this.physics.broadphase = new Physics.NaiveBroadphase();
-	        this.physics.defaultContactMaterial.contactEquationStiffness = 1e6;
-	        this.physics.defaultContactMaterial.contactEquationRelaxation = 10;
 	        this.boundTick = (timestamp) => this.tick(timestamp);
 
 	        this.sceneFlow = [
@@ -615,7 +780,7 @@ webpackJsonp([0],[
 	        gl.enable(gl.CULL_FACE); //todo -- material dependent
 
 	        var inv = this.camera.getMatrix();
-	        mat4.invert(inv, inv);
+	        inv = Util.invertMatrix4x4(inv);
 	        this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
 	    }
 
@@ -638,21 +803,16 @@ webpackJsonp([0],[
 	module.exports = GameManager;
 
 /***/ },
-/* 22 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Time = __webpack_require__(23);
-	const GameScene = __webpack_require__(24);
-	const vec3 = __webpack_require__(4).vec3;
-	const mat4 = __webpack_require__(4).mat4;
-	const quat = __webpack_require__(4).quat;
-	const degToRad = __webpack_require__(25).degToRad;
+	const Time = __webpack_require__(14);
+	const GameScene = __webpack_require__(15);
 
 	class SplashScene extends GameScene {
 
 	    constructor(gameManager) {
 	        super("SplashScene", gameManager);
-	        this.scratchCameraPosition = vec3.create();
 	    }
 
 	    enter() {
@@ -696,7 +856,7 @@ webpackJsonp([0],[
 	module.exports = SplashScene;
 
 /***/ },
-/* 23 */
+/* 14 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -713,7 +873,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 24 */
+/* 15 */
 /***/ function(module, exports) {
 
 	class GameScene {
@@ -734,43 +894,18 @@ webpackJsonp([0],[
 	module.exports = GameScene;
 
 /***/ },
-/* 25 */
-/***/ function(module, exports) {
-
-	const RadConstant = Math.PI / 180;
-	const DegreeConstant = 180 / Math.PI;
-
-	module.exports = {
-
-	    degToRad(degrees) {
-	        return degrees * RadConstant;
-	    },
-
-	    radToDeg(radians) {
-	        return radians * DegreeConstant;
-	    },
-
-	    clamp(input, min, max) {
-	        if (input < min) input = min;
-	        if (input > max) input = max;
-	        return input;
-	    }
-
-	};
-
-/***/ },
-/* 26 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GameScene = __webpack_require__(24);
-	const Time = __webpack_require__(23);
-	const vec3 = __webpack_require__(4).vec3;
+	const GameScene = __webpack_require__(15);
+	const Time = __webpack_require__(14);
+	const Vec3 = __webpack_require__(5).Vec3;
 
 	class GameStartScene extends GameScene {
 
 	    constructor(gameManager) {
 	        super("GameStart", gameManager);
-	        this.destPoint = vec3.fromValues(0, 2, 16);
+	        this.destPoint = new Vec3(0, 2, 15);
 	    }
 
 
@@ -780,8 +915,8 @@ webpackJsonp([0],[
 
 	    update() {
 	        const camera = this.gameManager.camera;
-	        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 5);
-	        if (vec3.equals(camera.position, this.destPoint)) {
+	        camera.position.lerp(this.destPoint, Time.deltaTime * 5, camera.position);
+	        if (camera.position.almostEquals(this.destPoint)) {
 	            this.gameManager.endScene();
 	        }
 	    }
@@ -791,10 +926,10 @@ webpackJsonp([0],[
 	module.exports = GameStartScene;
 
 /***/ },
-/* 27 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GameScene = __webpack_require__(24);
+	const GameScene = __webpack_require__(15);
 
 	class GameSummaryScene extends GameScene {
 
@@ -807,14 +942,16 @@ webpackJsonp([0],[
 	module.exports = GameSummaryScene;
 
 /***/ },
-/* 28 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GameScene = __webpack_require__(24);
-	const Constants = __webpack_require__(15);
-	const MouseButton = __webpack_require__(19);
-	const Vec3 = __webpack_require__(16).Vec3;
-	const Time = __webpack_require__(23);
+	const GameScene = __webpack_require__(15);
+	const Constants = __webpack_require__(7);
+	const MouseButton = __webpack_require__(10);
+	const Vec3 = __webpack_require__(5).Vec3;
+	const Time = __webpack_require__(14);
+	const Physics = __webpack_require__(5);
+	const PinPositions = __webpack_require__(7).PinPositions;
 
 	var pt1 = new Vec3(2, 0.5, 12);
 	var pt2 = new Vec3(-2, 0.5, 12);
@@ -835,22 +972,34 @@ webpackJsonp([0],[
 
 	    enter() {
 	        this.initRoll();
+	        this.resetPins();
 	        this.gameManager.showPlayerTurnMessage = true;
 	        setTimeout(() => {
 	            this.gameManager.showPlayerTurnMessage = false;
-	        }, 1000);
+	        }, 2000);
 	    }
 
 	    initRoll() {
 	        this.state = TurnState.RollSelect;
-	        this.gameManager.root.findChildren("pin");
 	        this.ball = this.gameManager.root.findChild("ball");
-	        this.ball.position = [0, 0.5, 12];
+	        this.ball.position = new Vec3(0, 0.5, 12);
 	        this.ball.rigidBody.position = Constants.GetBallResetPosition();
 	        this.ball.rigidBody.velocity = new Vec3(0, 0, 0);
 	        this.ball.rigidBody.force = new Vec3(0, 0, 0);
+	        this.ball.rigidBody.torque = new Vec3(0, 0, 0);
 	        this.gameManager.physics.removeBody(this.ball.rigidBody);
-	        //todo reset pins
+	    }
+
+	    resetPins() {
+	        var pins = this.gameManager.root.findChildren("pin");
+	        for(var i = 0; i < pins.length; i++) {
+	            pins[i].rigidBody.position = PinPositions[i].clone();
+	            pins[i].rigidBody.quaternion = new Physics.Quaternion();
+	            pins[i].velocity = new Vec3();
+	            pins[i].angluarVelocity = new Vec3();
+	            pins[i].force = new Vec3();
+	            pins[i].isDown = false;
+	        }
 	    }
 
 	    update() {
@@ -865,12 +1014,19 @@ webpackJsonp([0],[
 	                break;
 	            case TurnState.BallRolling:
 	                if (this.ball.rigidBody.position.y < -5) {
+	                    var score = 0;
+	                    var pins = this.gameManager.root.findChildren("pin");
+	                    for(var i = 0; i < pins.length; i++) {
+	                        var original = PinPositions[i];
+	                        if(!pins[i].isDown && original.distanceSquared(pins[i].rigidBody.position) > 2) {
+	                            score++;
+	                            pins[i].isDown = true;
+	                        }
+	                    }
 	                    var randomPins = Math.random() * 11;
 	                    randomPins = randomPins | 0;
-	                    console.log("got ", randomPins);
-	                    turnManager.recordScore(randomPins);
-	                    if (turnManager.currentPlayer.scoreKeeper.isCurrentRollingCompleted) {
-	                        console.log("Done rolling");
+	                    console.log("got ", score);
+	                    if(turnManager.recordScore(randomPins)) {
 	                        this.gameManager.endScene();
 	                    }
 	                    else {
@@ -881,15 +1037,17 @@ webpackJsonp([0],[
 	        }
 	    }
 
-	    exit() {
-	    }
+	    exit() { }
 
 	    launchBall() {
 	        this.state = TurnState.BallRolling;
+	        this.ball.rigidBody = new Physics.Body({
+	            mass: 10, // kg
+	            position: new Vec3(this.ball.position[0], this.ball.position[1], this.ball.position[2]),
+	            shape: new Physics.Sphere(0.5)
+	        });
 	        this.gameManager.physics.addBody(this.ball.rigidBody);
-	        this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -100), this.ball.rigidBody.position.vsub({
-	            x: 0, y: 0, z: 0.25
-	        }));
+	        this.ball.rigidBody.applyImpulse(new Vec3(0, 0, -500), new Vec3(0, 0.5, 12.5));
 	    }
 
 	    oscillateBall() {
@@ -911,10 +1069,10 @@ webpackJsonp([0],[
 	module.exports = PlayerTurnScene;
 
 /***/ },
-/* 29 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GameScene = __webpack_require__(24);
+	const GameScene = __webpack_require__(15);
 
 	class FrameScene extends GameScene {
 
@@ -934,11 +1092,11 @@ webpackJsonp([0],[
 	module.exports = FrameScene;
 
 /***/ },
-/* 30 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const GameEvent = __webpack_require__(18);
-	const EventEmitter = __webpack_require__(20);
+	const GameEvent = __webpack_require__(9);
+	const EventEmitter = __webpack_require__(11);
 
 	class TurnManager extends EventEmitter {
 
@@ -973,14 +1131,16 @@ webpackJsonp([0],[
 
 	    recordScore(pins) {
 	        //dont record points if the game is over
-	        if(this.isGameOver) return;
+	        if(this.isGameOver) return true;
 	        const scoreKeeper = this.currentPlayer.scoreKeeper;
 	        scoreKeeper.recordScore(pins);
 	        //if we are done rolling, end the turn. Note for the last frame
 	        //this could be up to 3 rolls.
 	        if (scoreKeeper.isCurrentRollingCompleted) {
 	            this.endTurn();
+	            return true;
 	        }
+	        return false;
 	    }
 
 	    endTurn() {
@@ -1018,7 +1178,7 @@ webpackJsonp([0],[
 	module.exports = TurnManager;
 
 /***/ },
-/* 31 */
+/* 21 */
 /***/ function(module, exports) {
 
 	
@@ -1054,10 +1214,10 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 32 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const ScoreKeeper = __webpack_require__(33);
+	const ScoreKeeper = __webpack_require__(23);
 
 	class Player {
 
@@ -1070,10 +1230,10 @@ webpackJsonp([0],[
 	module.exports = Player;
 
 /***/ },
-/* 33 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const ScoreFrame = __webpack_require__(34);
+	const ScoreFrame = __webpack_require__(24);
 
 	class ScoreKeeper {
 
@@ -1130,11 +1290,11 @@ webpackJsonp([0],[
 	module.exports = ScoreKeeper;
 
 /***/ },
-/* 34 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const clamp = __webpack_require__(25).clamp;
-	const FrameResult = __webpack_require__(17);
+	const clamp = __webpack_require__(4).clamp;
+	const FrameResult = __webpack_require__(8);
 
 	class ScoreFrame {
 
@@ -1198,10 +1358,10 @@ webpackJsonp([0],[
 	module.exports = ScoreFrame;
 
 /***/ },
-/* 35 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const MouseButton = __webpack_require__(19);
+	const MouseButton = __webpack_require__(10);
 
 	const MinDragRadius = 8;
 
@@ -1273,114 +1433,26 @@ webpackJsonp([0],[
 	module.exports = Input;
 
 /***/ },
-/* 36 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	 __webpack_require__(2).initGL("render-surface");
 
-	// const Time = require("./time");
-	// const Camera = require("./camera");
-	// const mat4 = require("gl-matrix").mat4;
-	// const vec3 = require("gl-matrix").vec3;
-	// const quat = require("gl-matrix").quat;
-	// const degToRad = require("./util").degToRad;
-	// const ResourceManager = require("./resource_manager");
-	// const Scene = require("./test_scene");
-	//
-	// const canvas = GLUtil.getCanvas();
-	// canvas.width = window.innerWidth;
-	// canvas.height = window.innerHeight;
-	//
-	// ResourceManager.readyPromise.then(() => {
-	//
-	//     const scene = Scene.load();
-	//     const sceneRoot = scene.root;
-	//     const scenePhysics = scene.physicsWorld;
-	//
-	//     const identityMatrix = mat4.create();
-	//     const camera = new Camera();
-	//     const gl = GLUtil.getGl();
-	//     resize(GLUtil.getGl(), camera);
-	//
-	//     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-	//     gl.clearColor(0.2, 0.2, 0.2, 1.0);
-	//
-	//     (function tick(timestamp) {
-	//         Time.update(timestamp);
-	//         requestAnimationFrame(tick);
-	//         scenePhysics.step(1.0 / 60.0, Time.deltaTime, 3);
-	//         sceneRoot.update();
-	//         camera.update();
-	//         render();
-	//     })();
-	//
-	//     function render() {
-	//         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	//         gl.enable(gl.DEPTH_TEST);
-	//         gl.enable(gl.CULL_FACE); //material dependent
-	//
-	//         var inv = camera.getMatrix();
-	//         mat4.invert(inv, inv);
-	//         sceneRoot.render(identityMatrix, inv, camera.projectionMatrix);
-	//     }
-	//
-	//     const scratch = vec3.create();
-	//     window.cameraSpeed = 15;
-	//     const canvas = GLUtil.getCanvas();
-	//     document.addEventListener("keypress", keyFn);
-	//     document.addEventListener("keydown", keyFn);
-	//
-	//     function keyFn(evt) {
-	//         vec3.set(scratch, 0, 0, 0);
-	//         if (evt.keyCode === 87) { //w
-	//             vec3.scale(scratch, camera.getForward(), -window.cameraSpeed * Time.deltaTime);
-	//             //position = position + forward * delta
-	//             vec3.add(camera.position, camera.position, scratch);
-	//         }
-	//         else if (evt.keyCode === 83) { //s
-	//             vec3.scale(scratch, camera.getForward(), window.cameraSpeed * Time.deltaTime);
-	//             vec3.add(camera.position, camera.position, scratch);
-	//         }
-	//         if (evt.keyCode === 65) { //a
-	//             vec3.scale(scratch, camera.getRight(), -window.cameraSpeed * Time.deltaTime);
-	//             vec3.add(camera.position, camera.position, scratch);
-	//         }
-	//         else if (evt.keyCode === 68) {//d
-	//             vec3.scale(scratch, camera.getRight(), window.cameraSpeed * Time.deltaTime);
-	//             vec3.add(camera.position, camera.position, scratch);
-	//         }
-	//
-	//         if (evt.keyCode === 81) { //q
-	//             quat.rotateY(camera.rotation, camera.rotation, degToRad(5));
-	//         }
-	//         else if (evt.keyCode === 69) { //e
-	//             quat.rotateY(camera.rotation, camera.rotation, -degToRad(5));
-	//         }
-	//     }
-	//
-	//     window.addEventListener("resize", function () {
-	//         resize(GLUtil.getGl(), camera);
-	//     });
-	//
-	//
-	// });
-	//
-	//
-
 
 /***/ },
-/* 37 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(38);
-	const ResourceManager = __webpack_require__(40);
-	const GameManager = __webpack_require__(21);
-	const SceneObject = __webpack_require__(14);
-	const Physics = __webpack_require__(16);
-	const Constants = __webpack_require__(15);
-	const vec3 = __webpack_require__(4).vec3;
+	const Vue = __webpack_require__(28);
+	const ResourceManager = __webpack_require__(30);
+	const GameManager = __webpack_require__(12);
+	const SceneObject = __webpack_require__(6);
+	const Physics = __webpack_require__(5);
+	const Constants = __webpack_require__(7);
 	const PinPositions = Constants.PinPositions;
 	const GetBallResetPosition = Constants.GetBallResetPosition;
+	const Vec3 = __webpack_require__(5).Vec3;
+	const Quaternion = __webpack_require__(5).Quaternion;
 
 	ResourceManager.readyPromise.then(() => {
 
@@ -1389,19 +1461,19 @@ webpackJsonp([0],[
 	    var alley = new SceneObject(gameManager.root, "alley");
 	    alley.model = ResourceManager.getModel("cube.json");
 	    alley.material = ResourceManager.getMaterial("default");
-	    alley.scale = vec3.fromValues(5, 0.2, 25);
+	    alley.scale = new Vec3(5, 0.2, 24);
 	    alley.rigidBody = new Physics.Body({
 	        mass: 0,// mass == 0 makes the body static
-	        shape: new Physics.Box(new Physics.Vec3(2.5, 0.1, 12)),
-	        position: new Physics.Vec3(0, -0.5, 0) //need this collider lower than its mesh
+	        shape: new Physics.Box(new Physics.Vec3(2.5, 0.1, 12)), //half extents
+	        position: new Physics.Vec3(0, 0, 0)
 	    });
 
 	    var ball = new SceneObject(gameManager.root, "ball");
 	    ball.model = ResourceManager.getModel("sphere.json");
-	    ball.scale = vec3.fromValues(0.5, 0.5, 0.5);
+	    ball.scale = new Vec3(0.5, 0.5, 0.5);
 	    ball.material = ResourceManager.getMaterial("ball.mat");
 	    ball.rigidBody = new Physics.Body({
-	        mass: 5, // kg
+	        mass: 10, // kg
 	        position: GetBallResetPosition(),
 	        shape: new Physics.Sphere(0.5)
 	    });
@@ -1413,61 +1485,45 @@ webpackJsonp([0],[
 	        var pin = new SceneObject(gameManager.root, "pin");
 	        pin.model = ResourceManager.getModel("pin.json");
 	        pin.material = ResourceManager.getMaterial("pin.mat");
-	        pin.setPosition(PinPositions[i][0], PinPositions[i][1], PinPositions[i][2]);
-	        pin.scale = vec3.fromValues(0.5, 0.5, 0.5);
-	        // var cylinderBody = new Physics.Box(new Physics.Vec3(0.2, 0.2, 0.2));//(0.1, 0.1, 2, 5) //todo this aint right, cant visualize it
-	        //
-	        // pin.rigidBody = new Physics.Body({
-	        //     mass: 1,
-	        //     position: new Physics.Vec3(pinPositions[i][0], pinPositions[i][1], pinPositions[i][2]),
-	        //     shape: cylinderBody
-	        // });
-	        //
-	        // gameManager.physics.addBody(pin.rigidBody);
+	        pin.setPosition(PinPositions[i].x, PinPositions[i].y, PinPositions[i].z);
+	        pin.scale = new Vec3(0.5, 0.5, 0.5);
+	        pin.rigidBody = new Physics.Body({
+	            mass: 5,
+	            position: PinPositions[i].clone()
+	        });
+
+	        pin.rigidBody.linearDamping = 0.3;
+	        pin.rigidBody.angularDamping = 0.3;
+	        var shape = new Physics.Cylinder(0.21, 0.21, 0.8, 10);
+	        var quat = new Quaternion();
+	        quat.setFromAxisAngle(new Vec3(1, 0, 0), -Math.PI / 2);
+	        var translation = new Vec3(0, 0, 0);
+	        shape.transformAllPoints(translation, quat);
+	        pin.rigidBody.addShape(shape);
+	        pin.isPin = true;
+
+	        gameManager.physics.addBody(pin.rigidBody);
 	    }
+
 
 	    new Vue({
 	        el: "#app-root",
 	        data: function () {
-	           return { gameManager }
-	        },
-	        components: {
-	            splash: __webpack_require__(52)
+	            return {gameManager}
 	        }
 	    });
+
 	});
 
-
-	// splash
-	//     select players
-	//     camera orbit
-	//     occasional ball auto played
-	//
-	// game start
-	//     lerp back to alley
-	//     wait 2s
-	//
-	// frame start
-	//     turn start
-	//     turn update
-	//     turn end
-	// frame end
-	//
-	// game end
-
-	//load resources
-	//new scene manager
-	//sceneflow.start
-
 /***/ },
-/* 38 */,
-/* 39 */,
-/* 40 */
+/* 28 */,
+/* 29 */,
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
-	const Model = __webpack_require__(41);
-	const Material = __webpack_require__(42);
+	const Model = __webpack_require__(31);
+	const Material = __webpack_require__(32);
 
 	class ResourceManager {
 
@@ -1539,21 +1595,21 @@ webpackJsonp([0],[
 	}
 
 	var manager = new ResourceManager();
-	manager.setShader("default", __webpack_require__(43), __webpack_require__(44));
-	manager.setModel("cube.json", __webpack_require__(45));
-	manager.setModel("quad.json", __webpack_require__(46));
-	manager.setModel("sphere.json", __webpack_require__(47));
-	manager.setModel("pin.json", __webpack_require__(48));
-	manager.setMaterial("default", __webpack_require__(49));
-	manager.setMaterial("pin.mat", __webpack_require__(50));
-	manager.setMaterial("ball.mat", __webpack_require__(51));
+	manager.setShader("default", __webpack_require__(33), __webpack_require__(34));
+	manager.setModel("cube.json", __webpack_require__(35));
+	manager.setModel("quad.json", __webpack_require__(36));
+	manager.setModel("sphere.json", __webpack_require__(37));
+	manager.setModel("pin.json", __webpack_require__(38));
+	manager.setMaterial("default", __webpack_require__(39));
+	manager.setMaterial("pin.mat", __webpack_require__(40));
+	manager.setMaterial("ball.mat", __webpack_require__(41));
 
 	manager.init();
 
 	module.exports = manager;
 
 /***/ },
-/* 41 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -1603,7 +1659,7 @@ webpackJsonp([0],[
 	module.exports = Model;
 
 /***/ },
-/* 42 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	const GLUtil = __webpack_require__(2);
@@ -1631,19 +1687,19 @@ webpackJsonp([0],[
 	module.exports = Material;
 
 /***/ },
-/* 43 */
+/* 33 */
 /***/ function(module, exports) {
 
-	module.exports = "\r\nattribute vec3 aVertexPosition;\r\nattribute vec3 aNormalPosition;\r\nattribute vec2 aTextureCoord;\r\n\r\nuniform mat4 uMVMatrix;\r\nuniform mat4 uPMatrix;\r\n//uniform mat4 uNormalMatrix;\r\n\r\n//varying vec3 vNormal;\r\nvarying vec3 vPosition;\r\nvarying vec2 vTextureCoord;\r\n\r\nvoid main(void) {\r\n    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\r\n    //vec4 unprojectedPosition = uMVMatrix * vec4(aVertexPosition, 1);\r\n    //vNormal = vec3(uNormalMatrix * vec4(aNormalPosition, 0));\r\n    vTextureCoord = aTextureCoord;\r\n}"
+	module.exports = "\nattribute vec3 aVertexPosition;\nattribute vec3 aNormalPosition;\nattribute vec2 aTextureCoord;\n\nuniform mat4 uMVMatrix;\nuniform mat4 uPMatrix;\n//uniform mat4 uNormalMatrix;\n\n//varying vec3 vNormal;\nvarying vec3 vPosition;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\n    //vec4 unprojectedPosition = uMVMatrix * vec4(aVertexPosition, 1);\n    //vNormal = vec3(uNormalMatrix * vec4(aNormalPosition, 0));\n    vTextureCoord = aTextureCoord;\n}"
 
 /***/ },
-/* 44 */
+/* 34 */
 /***/ function(module, exports) {
 
-	module.exports = "precision mediump float;\r\n\r\nvarying vec2 vTextureCoord;\r\n\r\nuniform sampler2D uSampler;\r\nuniform vec2 uTextureTiling;\r\n\r\n//precision mediump float;\r\n//precision mediump int;\r\n//\r\n//uniform vec3 u_lightColor;\r\n//uniform vec3 u_lightDir;\r\n//uniform vec3 u_lightPos;\r\n//uniform vec3 u_viewPos;\r\n//uniform vec3 u_diffuseColor;\r\n//uniform float u_roughness;\r\n//uniform float u_fresnel;\r\n//uniform float u_alpha;\r\n//uniform vec3 u_ambientColor;\r\n//uniform samplerCube u_tCube;\r\n//uniform float u_time;\r\n//varying vec4 vPosition;\r\n//varying vec3 vViewPosition;\r\n//varying vec4 vNormal;\r\n//varying vec3 vViewNormal;\r\n//varying vec2 vUv;\r\n//\r\n//#define M_PI 3.1415926535897932384626433832795\r\n//\r\n//float dotClamped(vec3 a, vec3 b) {\r\n//    return max(dot(a,b), 0.0);\r\n//}\r\n//\r\n//float F(float f0, vec3 l, vec3 h) {\r\n//    float LoH = dot(l,h);\r\n//    float powTerm = (-5.55473 * LoH - 6.98316) * LoH;\r\n//    return f0 + (1.0 - f0) * pow(2.0, powTerm);\r\n//}\r\n//\r\n//float N(float a, vec3 n, vec3 h, float NoH) {\r\n//    float a2 = a*a;\r\n//    return a2 / (4.0 * pow(pow(NoH, 2.0) * (a2 - 1.0) + 1.0, 2.0));\r\n//}\r\n//\r\n//float G(float a, vec3 l, vec3 v, vec3 h, vec3 n, float NoL, float NoV) {\r\n//    float VdotH = max(dot(v,h), 0.0);\r\n//    float NdotH = max(dot(n,h), 0.0);\r\n//    float minV = 2.0 * NdotH * min(NoV, NoL) / VdotH;\r\n//    return min(1.0, minV);\r\n//}\r\n\r\nvoid main(void) {\r\n    vec2 texCoord = vTextureCoord * uTextureTiling;\r\n    vec4 albedo = texture2D(uSampler, texCoord);\r\n    gl_FragColor = albedo;\r\n}\r\n\r\n//param, normal dist, shadowing, main"
+	module.exports = "precision mediump float;\n\nvarying vec2 vTextureCoord;\n\nuniform sampler2D uSampler;\nuniform vec2 uTextureTiling;\n\n//precision mediump float;\n//precision mediump int;\n//\n//uniform vec3 u_lightColor;\n//uniform vec3 u_lightDir;\n//uniform vec3 u_lightPos;\n//uniform vec3 u_viewPos;\n//uniform vec3 u_diffuseColor;\n//uniform float u_roughness;\n//uniform float u_fresnel;\n//uniform float u_alpha;\n//uniform vec3 u_ambientColor;\n//uniform samplerCube u_tCube;\n//uniform float u_time;\n//varying vec4 vPosition;\n//varying vec3 vViewPosition;\n//varying vec4 vNormal;\n//varying vec3 vViewNormal;\n//varying vec2 vUv;\n//\n//#define M_PI 3.1415926535897932384626433832795\n//\n//float dotClamped(vec3 a, vec3 b) {\n//    return max(dot(a,b), 0.0);\n//}\n//\n//float F(float f0, vec3 l, vec3 h) {\n//    float LoH = dot(l,h);\n//    float powTerm = (-5.55473 * LoH - 6.98316) * LoH;\n//    return f0 + (1.0 - f0) * pow(2.0, powTerm);\n//}\n//\n//float N(float a, vec3 n, vec3 h, float NoH) {\n//    float a2 = a*a;\n//    return a2 / (4.0 * pow(pow(NoH, 2.0) * (a2 - 1.0) + 1.0, 2.0));\n//}\n//\n//float G(float a, vec3 l, vec3 v, vec3 h, vec3 n, float NoL, float NoV) {\n//    float VdotH = max(dot(v,h), 0.0);\n//    float NdotH = max(dot(n,h), 0.0);\n//    float minV = 2.0 * NdotH * min(NoV, NoL) / VdotH;\n//    return min(1.0, minV);\n//}\n\nvoid main(void) {\n    vec2 texCoord = vTextureCoord * uTextureTiling;\n    vec4 albedo = texture2D(uSampler, texCoord);\n    gl_FragColor = albedo;\n}\n\n//param, normal dist, shadowing, main"
 
 /***/ },
-/* 45 */
+/* 35 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1890,7 +1946,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 46 */
+/* 36 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -1947,7 +2003,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 47 */
+/* 37 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -8390,7 +8446,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 48 */
+/* 38 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11265,7 +11321,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 49 */
+/* 39 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11285,7 +11341,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 50 */
+/* 40 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11298,7 +11354,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 51 */
+/* 41 */
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -11311,54 +11367,7 @@ webpackJsonp([0],[
 	};
 
 /***/ },
-/* 52 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Vue = __webpack_require__(38);
-
-	module.exports = Vue.component('component-splash', {
-	    template: __webpack_require__(53),
-
-	    props: [
-	        {name: 'game-manager',  required: true}
-	    ],
-
-	    data: function () {
-	        return {
-	            currentView: 'component-splash-scene',
-	            showingPlayerSelection: false
-	        }
-	    },
-
-	    methods: {
-
-	        showPlayerSelection() {
-	            this.showingPlayerSelection = true;
-	        },
-
-	        setPlayerCount(count) {
-
-	            this.$el.classList.remove('slideInDown');
-	            this.$el.classList.add('slideOutUp');
-
-	            setTimeout(() => {
-	                this.gameManager.start(count);
-	                this.gameManager.endScene();
-	            }, 1000);
-
-	        }
-	    },
-
-	});
-
-/***/ },
-/* 53 */
-/***/ function(module, exports) {
-
-	module.exports = "<div class=\"component-main slideInDown\">\r\n\r\n    <div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">\r\n\r\n        <div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">\r\n\r\n            <div class=\"splash-screen\">\r\n                <h1>Bowling With</h1>\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p class=\"pulsate\">Click to get rollin...</p>\r\n            </div>\r\n\r\n        </div>\r\n\r\n        <div class=\"flip-back\" v-else>\r\n            <div class=\"player-selection-panel\">\r\n                <img src=\"./textures/babbel-logo.png\"/>\r\n                <p>Select number of players</p>\r\n                <div class=\"player-selection-grid\">\r\n\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>\r\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>\r\n\r\n                </div>\r\n            </div>\r\n        </div>\r\n\r\n    </div>\r\n\r\n</div>\r\n\r\n\r\n";
-
-/***/ },
-/* 54 */
+/* 42 */
 /***/ function(module, exports) {
 
 	class PlayerStats {
@@ -11376,49 +11385,26 @@ webpackJsonp([0],[
 	module.exports = PlayerStats;
 
 /***/ },
-/* 55 */
+/* 43 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const SceneObject = __webpack_require__(14);
-	const ResourceManager = __webpack_require__(40);
-	const vec3 = __webpack_require__(4).vec3;
-	const Physics = __webpack_require__(16);
-
-	module.exports = {
-
-	    load: function () {
-
-	        const physicsWorld = new Physics.World();
-	        physicsWorld.gravity.set(0, -9.82, 0);
-	        var root = new SceneObject();
-
-	        return {root, physicsWorld };
-	    }
-	};
-
-
-
-/***/ },
-/* 56 */
-/***/ function(module, exports, __webpack_require__) {
-
-	const Vue = __webpack_require__(38);
+	const Vue = __webpack_require__(28);
 
 	Vue.component("component-frame-start", {
-	    template: __webpack_require__(56)
+	    template: __webpack_require__(43)
 	});
 
 /***/ },
-/* 57 */
+/* 44 */
 /***/ function(module, exports) {
 
 	
 
 /***/ },
-/* 58 */
+/* 45 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(38);
+	const Vue = __webpack_require__(28);
 
 	const messages = [
 	    "time to shine!",
@@ -11426,13 +11412,13 @@ webpackJsonp([0],[
 	    "knock em' dead!",
 	    "jetzt gehts los!",
 	    "Vamanos! Rapido!",
-	    "pin-Pocolypse Now!"
+	    "Get ready for the pin-apocalypse!"
 	];
 
-	__webpack_require__(59);
+	__webpack_require__(46);
 
 	Vue.component("component-player-turn", {
-	    template: __webpack_require__(63),
+	    template: __webpack_require__(50),
 	    props: [{name: 'player-index', required: true}],
 	    data: function() {
 	        return {
@@ -11442,16 +11428,16 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 59 */
+/* 46 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(60);
+	var content = __webpack_require__(47);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(62)(content, {});
+	var update = __webpack_require__(49)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11468,10 +11454,10 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 60 */
+/* 47 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(61)();
+	exports = module.exports = __webpack_require__(48)();
 	// imports
 
 
@@ -11482,7 +11468,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 61 */
+/* 48 */
 /***/ function(module, exports) {
 
 	/*
@@ -11538,7 +11524,7 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 62 */
+/* 49 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -11790,20 +11776,20 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 63 */
+/* 50 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"component-player-turn\">\r\n    <h1>Player {{(playerIndex + 1)}}, {{motivationalMessage}}</h1>\r\n</div>";
+	module.exports = "<div class=\"component-player-turn\">\n    <h1>Player {{(playerIndex + 1)}}, {{motivationalMessage}}</h1>\n</div>";
 
 /***/ },
-/* 64 */
+/* 51 */
 /***/ function(module, exports, __webpack_require__) {
 
-	const Vue = __webpack_require__(38);
-	__webpack_require__(65);
+	const Vue = __webpack_require__(28);
+	__webpack_require__(52);
 
 	module.exports = Vue.component('component-score-board', {
-	    template: __webpack_require__(67),
+	    template: __webpack_require__(54),
 	    props: [{name: 'game-manager', required: true}],
 	    data: function () {
 	        return {
@@ -11819,9 +11805,10 @@ webpackJsonp([0],[
 	            const scores = [];
 	            const scoreKeeper = players[i].scoreKeeper;
 	            this.scoreKeepers.push(scoreKeeper);
-	            for(var j = 0; j < 10; j++) {
+	            for(var j = 0; j < 1; j++) {
 	                scores.push(this.getScoreString(scoreKeeper.frames[j]));
 	            }
+	            scores.push(scoreKeeper.totalScore);
 	            scoreStrings.push(scores);
 	        }
 	        this.$set("scoreStrings", scoreStrings);
@@ -11833,10 +11820,10 @@ webpackJsonp([0],[
 	                return "";
 	            }
 	            if(frame.isStrike) {
-	                return "X";
+	                return "Strike";
 	            }
 	            if(frame.isSpare) {
-	                return "/";
+	                return "Spare";
 	            }
 	            return frame.score;
 	        }
@@ -11844,16 +11831,16 @@ webpackJsonp([0],[
 	});
 
 /***/ },
-/* 65 */
+/* 52 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(66);
+	var content = __webpack_require__(53);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(62)(content, {});
+	var update = __webpack_require__(49)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -11870,10 +11857,10 @@ webpackJsonp([0],[
 	}
 
 /***/ },
-/* 66 */
+/* 53 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(61)();
+	exports = module.exports = __webpack_require__(48)();
 	// imports
 
 
@@ -11884,10 +11871,57 @@ webpackJsonp([0],[
 
 
 /***/ },
-/* 67 */
+/* 54 */
 /***/ function(module, exports) {
 
-	module.exports = "<div class=\"score-board-container\">\r\n    <h1>Scoreboard</h1>\r\n    <table>\r\n        <thead>\r\n        <tr>\r\n            <th>Player</th>\r\n            <th>Frame 1</th>\r\n            <th>Frame 2</th>\r\n            <th>Frame 3</th>\r\n            <th>Frame 4</th>\r\n            <th>Frame 5</th>\r\n            <th>Frame 6</th>\r\n            <th>Frame 7</th>\r\n            <th>Frame 8</th>\r\n            <th>Frame 9</th>\r\n            <th>Frame 10</th>\r\n            <th>Total</th>\r\n        </tr>\r\n        </thead>\r\n        <tbody>\r\n        <template v-for=\"scores in scoreStrings\">\r\n            <tr>\r\n                <td>{{($index + 1)}}</td>\r\n                <td>{{scores[0]}}</td>\r\n                <td>{{scores[1]}}</td>\r\n                <td>{{scores[2]}}</td>\r\n                <td>{{scores[3]}}</td>\r\n                <td>{{scores[4]}}</td>\r\n                <td>{{scores[5]}}</td>\r\n                <td>{{scores[6]}}</td>\r\n                <td>{{scores[7]}}</td>\r\n                <td>{{scores[8]}}</td>\r\n                <td>{{scores[9]}}</td>\r\n                <td>300</td>\r\n            </tr>\r\n        </template>\r\n        </tbody>\r\n    </table>\r\n</div>\r\n";
+	module.exports = "<div class=\"score-board-container\">\n    <h1>Scoreboard</h1>\n    <table>\n        <thead>\n        <tr>\n            <th>Player</th>\n            <th>Frame 1</th>\n            <th>Frame 2</th>\n            <th>Frame 3</th>\n            <th>Frame 4</th>\n            <th>Frame 5</th>\n            <th>Frame 6</th>\n            <th>Frame 7</th>\n            <th>Frame 8</th>\n            <th>Frame 9</th>\n            <th>Frame 10</th>\n            <th>Total</th>\n        </tr>\n        </thead>\n        <tbody>\n        <template v-for=\"scores in scoreStrings\">\n            <tr>\n                <td>{{($index + 1)}}</td>\n                <td>{{scores[0]}}</td>\n                <td>{{scores[1]}}</td>\n                <td>{{scores[2]}}</td>\n                <td>{{scores[3]}}</td>\n                <td>{{scores[4]}}</td>\n                <td>{{scores[5]}}</td>\n                <td>{{scores[6]}}</td>\n                <td>{{scores[7]}}</td>\n                <td>{{scores[8]}}</td>\n                <td>{{scores[9]}}</td>\n                <td>{{scores[10]}}</td>\n            </tr>\n        </template>\n        </tbody>\n    </table>\n</div>\n";
+
+/***/ },
+/* 55 */
+/***/ function(module, exports, __webpack_require__) {
+
+	const Vue = __webpack_require__(28);
+
+	module.exports = Vue.component('component-splash', {
+	    template: __webpack_require__(56),
+
+	    props: [
+	        {name: 'game-manager',  required: true}
+	    ],
+
+	    data: function () {
+	        return {
+	            currentView: 'component-splash-scene',
+	            showingPlayerSelection: false
+	        }
+	    },
+
+	    methods: {
+
+	        showPlayerSelection() {
+	            this.showingPlayerSelection = true;
+	        },
+
+	        setPlayerCount(count) {
+
+	            this.$el.classList.remove('slideInDown');
+	            this.$el.classList.add('slideOutUp');
+
+	            setTimeout(() => {
+	                this.gameManager.start(count);
+	                this.gameManager.endScene();
+	            }, 1000);
+
+	        }
+	    },
+
+	});
+
+/***/ },
+/* 56 */
+/***/ function(module, exports) {
+
+	module.exports = "<div class=\"component-main slideInDown\">\n\n    <div class=\"flip-card\" v-bind:class=\"{'flipped': showingPlayerSelection}\">\n\n        <div class=\"flip-front\"  v-show=\"!showingPlayerSelection\" v-on:click=\"showPlayerSelection()\">\n\n            <div class=\"splash-screen\">\n                <h1>Bowling With</h1>\n                <img src=\"./textures/babbel-logo.png\"/>\n                <p class=\"pulsate\">Click to get rollin...</p>\n            </div>\n\n        </div>\n\n        <div class=\"flip-back\" v-else>\n            <div class=\"player-selection-panel\">\n                <img src=\"./textures/babbel-logo.png\"/>\n                <p>Select number of players</p>\n                <div class=\"player-selection-grid\">\n\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(1)\">1</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(2)\">2</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(3)\">3</div>\n                    <div class=\"player-select-button\" v-on:click=\"setPlayerCount(4)\">4</div>\n\n                </div>\n            </div>\n        </div>\n\n    </div>\n\n</div>\n\n\n";
 
 /***/ }
 ]);

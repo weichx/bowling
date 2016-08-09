@@ -6,7 +6,7 @@ const messages = [
     "knock em' dead!",
     "jetzt gehts los!",
     "Vamanos! Rapido!",
-    "pin-Pocolypse Now!"
+    "Get ready for the pin-apocalypse!"
 ];
 
 require("./player_turn.scss");

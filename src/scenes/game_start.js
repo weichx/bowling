@@ -1,12 +1,12 @@
 const GameScene = require("./game_scene");
 const Time = require("../time");
-const vec3 = require("gl-matrix").vec3;
+const Vec3 = require("cannon").Vec3;
 
 class GameStartScene extends GameScene {
 
     constructor(gameManager) {
         super("GameStart", gameManager);
-        this.destPoint = vec3.fromValues(0, 2, 16);
+        this.destPoint = new Vec3(0, 2, 15);
     }
 
 
@@ -16,8 +16,8 @@ class GameStartScene extends GameScene {
 
     update() {
         const camera = this.gameManager.camera;
-        vec3.lerp(camera.position, camera.position, this.destPoint, Time.deltaTime * 5);
-        if (vec3.equals(camera.position, this.destPoint)) {
+        camera.position.lerp(this.destPoint, Time.deltaTime * 5, camera.position);
+        if (camera.position.almostEquals(this.destPoint)) {
             this.gameManager.endScene();
         }
     }

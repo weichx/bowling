@@ -1,4 +1,5 @@
 const GLUtil = require("./gl_util");
+const Util = require("./util");
 const SceneObject = require('./scene_object');
 const SplashScene = require("./scenes/splash_scene");
 const GameStartScene = require("./scenes/game_start");
@@ -11,10 +12,9 @@ const Player = require("./player");
 const Physics = require("cannon");
 const Camera = require("./camera");
 const Time = require("./time");
-const mat4 = require("gl-matrix").mat4;
 const Input = require("./input");
 
-const IdentityMatrix = mat4.create();
+const IdentityMatrix = Util.createMatrix4x4();
 const PhysicsFixedRate = 1.0 / 60.0;
 
 class GameManager extends SceneManager {
@@ -30,11 +30,9 @@ class GameManager extends SceneManager {
         this.turnManager = null;
         this.input = new Input();
         this.physics = new Physics.World();
-        this.physics.solver.iterations = 5;
-        this.physics.gravity.set(0, -9.82, 0);
+        this.physics.solver.iterations = 10;
+        this.physics.gravity.set(0, -30, 0);
         this.physics.broadphase = new Physics.NaiveBroadphase();
-        this.physics.defaultContactMaterial.contactEquationStiffness = 1e6;
-        this.physics.defaultContactMaterial.contactEquationRelaxation = 10;
         this.boundTick = (timestamp) => this.tick(timestamp);
 
         this.sceneFlow = [
@@ -88,7 +86,7 @@ class GameManager extends SceneManager {
         gl.enable(gl.CULL_FACE); //todo -- material dependent
 
         var inv = this.camera.getMatrix();
-        mat4.invert(inv, inv);
+        inv = Util.invertMatrix4x4(inv);
         this.root.render(IdentityMatrix, inv, this.camera.projectionMatrix);
     }
 

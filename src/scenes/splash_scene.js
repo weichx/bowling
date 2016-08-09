@@ -1,15 +1,10 @@
 const Time = require("../time");
 const GameScene = require("./game_scene");
-const vec3 = require("gl-matrix").vec3;
-const mat4 = require("gl-matrix").mat4;
-const quat = require("gl-matrix").quat;
-const degToRad = require('../util').degToRad;
 
 class SplashScene extends GameScene {
 
     constructor(gameManager) {
         super("SplashScene", gameManager);
-        this.scratchCameraPosition = vec3.create();
     }
 
     enter() {

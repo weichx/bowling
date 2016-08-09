@@ -1,12 +1,7 @@
-const vec3 = require("gl-matrix").vec3;
-const quat = require("gl-matrix").quat;
-const mat4 = require("gl-matrix").mat4;
-const mat3 = require("gl-matrix").mat3;
 const GLUtil = require("./gl_util");
-
-const forward = vec3.fromValues(0, 0, 1);
-const right = vec3.fromValues(1, 0, 0);
-const up = vec3.fromValues(0, 1, 0);
+const Util = require("./util");
+const Vec3 = require("cannon").Vec3;
+const Quaternion = require("cannon").Quaternion;
 
 class SceneObject {
 
@@ -18,11 +13,9 @@ class SceneObject {
         this.rigidBody = null;
         this.components = [];
         this.children = [];
-        this.position = vec3.create();
-        this.rotation = quat.create();
-        quat.identity(this.rotation);
-        this.scale = vec3.fromValues(1, 1, 1);
-        this.__matrix = mat4.create();
+        this.position = new Vec3();
+        this.rotation = new Quaternion();
+        this.scale = new Vec3(1, 1, 1);
     }
 
     initialize() {
@@ -32,7 +25,7 @@ class SceneObject {
     }
 
     findChild(tag) {
-        for(var i = 0; i < this.children.length; i++) {
+        for (var i = 0; i < this.children.length; i++) {
             if (this.children[i].tag === tag) return this.children[i];
         }
         return null;
@@ -40,16 +33,16 @@ class SceneObject {
 
     findChildren(tag) {
         var retn = [];
-        for(var i = 0; i < this.children.length; i++) {
+        for (var i = 0; i < this.children.length; i++) {
             if (this.children[i].tag === tag) retn.push(this.children[i]);
         }
         return retn;
     }
 
     render(parentWorldMatrix, viewMatrix, projectionMatrix) {
-        const wvp = mat4.create();
-        mat4.multiply(wvp, parentWorldMatrix, viewMatrix);
-        mat4.multiply(wvp, wvp, projectionMatrix);
+        const wvp = Util.createMatrix4x4();
+        Util.multiplyMatrix(wvp, parentWorldMatrix, viewMatrix);
+        Util.multiplyMatrix(wvp, wvp, projectionMatrix);
 
         this.renderSelf(parentWorldMatrix, viewMatrix, projectionMatrix);
 
@@ -60,7 +53,7 @@ class SceneObject {
     }
 
     renderSelf(parentWorld, viewMatrix, projectionMatrix) {
-        if(!this.model) return;
+        if (!this.model) return;
 
         const gl = GLUtil.getGl();
         const material = this.material;
@@ -71,13 +64,12 @@ class SceneObject {
 
         gl.useProgram(material.program);
 
-        var mvMatrix = mat4.create();
+        var mvMatrix = Util.createMatrix4x4();
         var world = this.getMatrix();
-        mat4.multiply(world, world, parentWorld);
-        mat4.multiply(mvMatrix, viewMatrix, world);
+        Util.multiplyMatrix(world, world, parentWorld);
+        Util.multiplyMatrix(mvMatrix, viewMatrix, world);
 
-        var normalMatrix = mat3.create();
-        mat3.normalFromMat4(normalMatrix, mvMatrix);
+        var normalMatrix = Util.extractRotation(mvMatrix);
         gl.uniformMatrix3fv(shaderPointers.uNormalMatrix, false, normalMatrix);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer.glBuffer);
@@ -98,12 +90,17 @@ class SceneObject {
         gl.uniform2fv(shaderPointers.uTextureTiling, [1, 1]);
 
         gl.drawElements(gl.TRIANGLES, indexBuffer.itemCount, gl.UNSIGNED_SHORT, 0);
+
     }
 
     update() {
-        if(this.rigidBody && !this.rigidBody.test) {
+        if (this.rigidBody) {
             var v = this.rigidBody.position;
             var q = this.rigidBody.quaternion;
+            if (this.isPin) {
+                v = {x: v.x, y: v.y - 0.5, z: v.z};
+            }
+
             this.setPosition(v.x, v.y, v.z);
             this.setRotation(q.x, q.y, q.z, q.w);
         }
@@ -120,21 +117,19 @@ class SceneObject {
     }
 
     setScale(x, y, z) {
-        vec3.set(this.scale, x, y, z);
+        this.scale.set(x, y, z)
     }
 
     setRotation(x, y, z, w) {
-        quat.set(this.rotation, x, y, z, w);
+        this.rotation.set(x, y, z, w);
     }
 
     setPosition(x, y, z) {
-        vec3.set(this.position, x, y, z);
+        this.position.set(x, y, z);
     }
 
     getMatrix() {
-        mat4.identity(this.__matrix);
-        mat4.fromRotationTranslationScale(this.__matrix, this.rotation, this.position, this.scale);
-        return this.__matrix;
+        return Util.matrixFromTRS(this.rotation, this.position, this.scale);
     }
 
     setParent(parent) {
@@ -148,24 +143,6 @@ class SceneObject {
         if (this.parent) {
             this.parent.children.push(this);
         }
-    }
-
-    getForward() {
-        var retn = vec3.create();
-        vec3.transformQuat(retn, forward, this.rotation); //may need to include parent rotation
-        return retn;
-    }
-
-    getRight() {
-        var retn = vec3.create();
-        vec3.transformQuat(retn, right, this.rotation);
-        return retn;
-    }
-
-    getUp() {
-        var retn = vec3.create();
-        vec3.transformQuat(retn, up, this.rotation);
-        return retn;
     }
 
 }

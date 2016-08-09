@@ -9,7 +9,7 @@ module.exports = {
             '!./src/main.js',
             './src/**/*.js',
         ]).concat(['./src/main.js']),
-        vendor: ['vue', 'cannon', 'gl-matrix']
+        vendor: ['vue', 'cannon']
     },
     output: {
         path: path.resolve(__dirname, 'dist/'),

@@ -34,14 +34,16 @@ class TurnManager extends EventEmitter {
 
     recordScore(pins) {
         //dont record points if the game is over
-        if(this.isGameOver) return;
+        if(this.isGameOver) return true;
         const scoreKeeper = this.currentPlayer.scoreKeeper;
         scoreKeeper.recordScore(pins);
         //if we are done rolling, end the turn. Note for the last frame
         //this could be up to 3 rolls.
         if (scoreKeeper.isCurrentRollingCompleted) {
             this.endTurn();
+            return true;
         }
+        return false;
     }
 
     endTurn() {

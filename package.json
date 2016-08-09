@@ -11,9 +11,11 @@
   "dependencies": {
     "cannon": "^0.6.2",
     "css-loader": "^0.23.1",
+    "gl-matrix": "^2.3.2",
     "globby": "^6.0.0",
     "html-loader": "^0.4.3",
     "jasmine": "^2.4.1",
+    "json-loader": "^0.5.4",
     "sass-loader": "^4.0.0",
     "scss-loader": "0.0.1",
     "style-loader": "^0.13.1",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "jasmine": "^2.4.1",
-    "node-sass": "^3.8.0"
+    "node-sass": "^3.8.0",
+    "webpack-glsl-loader": "^1.0.1"
   }
 }

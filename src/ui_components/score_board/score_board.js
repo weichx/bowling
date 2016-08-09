@@ -18,9 +18,10 @@ module.exports = Vue.component('component-score-board', {
             const scores = [];
             const scoreKeeper = players[i].scoreKeeper;
             this.scoreKeepers.push(scoreKeeper);
-            for(var j = 0; j < 10; j++) {
+            for(var j = 0; j < 1; j++) {
                 scores.push(this.getScoreString(scoreKeeper.frames[j]));
             }
+            scores.push(scoreKeeper.totalScore);
             scoreStrings.push(scores);
         }
         this.$set("scoreStrings", scoreStrings);
@@ -32,10 +33,10 @@ module.exports = Vue.component('component-score-board', {
                 return "";
             }
             if(frame.isStrike) {
-                return "X";
+                return "Strike";
             }
             if(frame.isSpare) {
-                return "/";
+                return "Spare";
             }
             return frame.score;
         }
