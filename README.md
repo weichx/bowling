@@ -12,6 +12,23 @@ to test:
 to run:
 open index.html in chrome (untested on other browsers)
 
+## Assignment
+Bowling Challenge
+  - Implement a scoring system for a bowling game according to these rules:
+  - A game consists of 10 frames.
+  - In general each frame has 2 rolls.
+  - In general a player scores the number of pins knocked down.
+  - If the player knocks down all 10 pins on the first roll it’s a strike. The player scores 10 plus the number of pins knocked down in the next two rolls.
+  - If the player knocks down all 10 pins in two rolls it’s a spare. The player scores 10 plus the number of pins knocked down in the next roll.
+  - A decent visualisation of the game.
+
+Bonus:
+
+- Add support for the last frame in the game:
+- The player gets additional rolls in the last frame: one additional for a spare after the second roll or two extra rolls for a strike.
+- Create a method that randomly throws a roll (one roll is 1-10 pins knocked down), and progresses the scoring.
+- Support multiple players.
+
 ## Architecture
 This is built in webgl and uses CannonJS as a physics engine. Outside of Vue, Cannon, and the webpack utilities all code is my own. I included a very primitive resource management system for loading models and textures etc. The UI is built with Vue because it is quite simple and I am not familiar with React yet. The flow of the game is handled by a scene manager where each scene is responsible for its own initialization, cleanup and updating. I think this decouples them quite nicely. There is `TurnManager` that keeps track of who's turn it is and is responsible for recording scores (internally it defers to `ScoreKeeper` but this is hidden in the method interface). The game supports up to 4 players, it could support `n` but 4 seemed reasonable.
 
